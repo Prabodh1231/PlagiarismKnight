@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Upload Drag and Drop</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Upload Area 1 -->
+      <div class="upload-area" id="uploadArea1">
+        <p>Drag & Drop File Here</p>
+        <button onclick="document.getElementById('fileInput1').click()">
+          Select File
+        </button>
+        <input
+          type="file"
+          id="fileInput1"
+          class="file-input"
+          accept=".pdf"
+          multiple
+          onchange="handleFiles(this.files, 'preview1')"
+        />
+      </div>
+
+      <!-- Upload Area 2 -->
+      <div class="upload-area" id="uploadArea2">
+        <p>Drag & Drop File Here</p>
+        <button onclick="document.getElementById('fileInput2').click()">
+          Select File
+        </button>
+        <input type="file" id="fileInput2" class="file-input" accept=".docx" />
+      </div>
+      <div class="preview_area">
+        <div id="preview1"></div>
+        <div id="preview2"></div>
+      </div>
+    </div>
+    <button id="checkplagrism">Check Plagiarism</button>
+    <div id="output1"></div>
+    <div id="output2"></div>
+
+    <script src="js/mammoth.browser.js"></script>
+    <script type="module" src="js/script.js"></script>
+    <script type="module" src="js/pdf_ext.js"></script>
+  </body>
+</html>
