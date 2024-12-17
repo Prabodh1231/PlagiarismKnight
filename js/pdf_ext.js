@@ -92,10 +92,8 @@ async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
       try {
         const arrayBuffer = await docxFile.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer });
-        cleanedClientInput = result.value
-          .replace(/[^a-zA-Z0-9 ]/g, "")
-          .toLowerCase();
-        output.innerHTML = `<p>${result.value.toUpperCase()}</p>`;
+        cleanedClientInput = cleanWord(result.value);
+        output.innerHTML = `<p>${cleanedClientInput}</p>`;
       } catch (error) {
         throw new Error(`Error processing DOCX file: ${error.message}`);
       }
@@ -111,11 +109,8 @@ async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
     for (const file of pdfFiles) {
       try {
         const text = await extractTextFromPDF(file);
-        const cleaned_text = text.replace(/[^a-zA-Z0-9 ]/g, "").toLowerCase();
-        let cleanedCompareInput = cleaned_text
-          .replace(/[^a-zA-Z0-9 ]/g, "")
-          .toLowerCase();
-        let arrayCompareInput = cleanedCompareInput.split(" ");
+        const cleaned_text = cleanWord(text);
+        let arrayCompareInput = cleaned_text.split(" ");
         let sizeOfcompairArray = arrayCompareInput.length;
         let sizeOfClientInput = arrayClientInput.length;
 
@@ -193,4 +188,14 @@ async function extractTextFromPDF(file) {
   } catch (error) {
     throw new Error(`PDF extraction error: ${error.message}`);
   }
+}
+
+function cleanWord(text) {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9 ]/g, "") // Remove non-alphanumeric characters
+    .replace(/\s+/g, " ") // Replace multiple spaces with single space
+    .trim() // Remove leading/trailing spaces
+    .toLowerCase();
 }

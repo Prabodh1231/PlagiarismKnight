@@ -1,61 +1,117 @@
+/* File: style.css */
+
 body {
   font-family: Arial, sans-serif;
-  display: grid;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   margin: 0;
-  background-color: #f2f2f2;
+  padding: 0;
+  background-color: #f9f9f9;
+  color: #333;
 }
 
 .container {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Two equal columns */
-  gap: 20px;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .upload-area {
-  border: 2px dashed #888;
-  border-radius: 8px;
-  width: 250px;
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #666;
-  transition: background-color 0.3s;
+  border: 2px dashed #aaa;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  transition: border-color 0.3s ease;
+  background-color: #f8f8f8;
+}
+
+.upload-area p {
+  font-size: 16px;
+  margin: 10px 0;
+  color: #555;
+}
+
+.upload-area button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.upload-area button:hover {
+  background: #0056b3;
 }
 
 .upload-area:hover {
-  background-color: #e0e0e0;
-}
-
-.upload-area.dragging {
-  background-color: #d0ffd0;
-  border-color: #4caf50;
+  border-color: #007bff;
 }
 
 .file-input {
   display: none;
 }
 
-.file-preview {
-  margin-top: 10px;
-  font-size: 0.9em;
-  color: #444;
+.preview_area {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
-button {
-  margin-top: 10px;
-  padding: 8px 12px;
+.preview_area div {
+  flex: 1;
+  min-height: 100px;
+  padding: 10px;
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow-y: auto;
+}
+
+.preview_area div::-webkit-scrollbar {
+  width: 8px;
+}
+
+.preview_area div::-webkit-scrollbar-thumb {
+  background: #007bff;
+  border-radius: 4px;
+}
+
+.preview_area div::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+#checkplagrism {
+  background: #28a745;
+  color: white;
   border: none;
-  background-color: #4caf50;
-  color: #fff;
+  padding: 10px 20px;
+  font-size: 14px;
   border-radius: 4px;
   cursor: pointer;
+  display: block;
+  margin: 20px auto;
+  transition: background-color 0.3s ease;
 }
 
-button:hover {
-  background-color: #45a049;
+#checkplagrism:hover {
+  background: #218838;
+}
+
+#output1,
+#output2,
+#output3 {
+  margin-top: 20px;
+  padding: 10px;
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  min-height: 50px;
+  font-size: 14px;
+  color: #555;
 }
