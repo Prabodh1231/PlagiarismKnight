@@ -1,4 +1,12 @@
-// Function to handle selected or dropped files and display their names and sizes
+/**
+ * Function to handle selected or dropped files and display their names and sizes.
+  const preview = document.getElementById(previewElementId);
+  if (!preview) {
+    console.error(`Element with ID ${previewElementId} not found.`);
+    return;
+  }
+  preview.innerHTML = ""; // Clear existing preview
+ */
 function handleFiles(files, previewElementId) {
   const preview = document.getElementById(previewElementId);
   preview.innerHTML = ""; // Clear existing preview
@@ -13,7 +21,8 @@ function handleFiles(files, previewElementId) {
 }
 
 // Event listeners for drag-and-drop
-document.querySelectorAll(".upload-area").forEach((uploadArea) => {
+const uploadAreas = document.querySelectorAll(".upload-area");
+uploadAreas.forEach((uploadArea) => {
   uploadArea.addEventListener("dragover", (event) => {
     event.preventDefault();
     uploadArea.classList.add("dragging");
@@ -31,6 +40,8 @@ document.querySelectorAll(".upload-area").forEach((uploadArea) => {
       handleFiles(files, "preview1");
     } else if (uploadArea.id === "uploadArea2") {
       handleFiles(files, "preview2");
+    } else {
+      console.error(`Unexpected upload area ID: ${uploadArea.id}`);
     }
   });
 });
