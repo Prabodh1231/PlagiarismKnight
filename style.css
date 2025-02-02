@@ -44,6 +44,11 @@ body {
   transition: background-color 0.3s ease;
 }
 
+.upload-area.dragover {
+  background-color: #2c6ff5;
+  border-color: #1122d9;
+}
+
 .upload-area button:hover {
   background: #0056b3;
 }
