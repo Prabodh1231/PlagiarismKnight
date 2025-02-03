@@ -322,29 +322,35 @@ async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
 
 /**
  * Finds and highlights common elements between input texts
- * @param {string[]} arrayClientInput - Original input text array
- * @param {string[]} arrayCompareInput - Text to compare against
- * @param {string[]} copyClientInput01 - Copy of input for highlighting
+ * @param {string[]} originalTextArray - Original input text array
+ * @param {string[]} comparisonTextArray - Text to compare against
+ * @param {string[]} highlightedTextArray - Copy of input for highlighting
  */
 function findCommonElements(
-  arrayClientInput,
-  arrayCompareInput,
-  copyClientInput01
+  originalTextArray,
+  comparisonTextArray,
+  highlightedTextArray
 ) {
-  // Create Set for efficient word lookup
-  const compareSet = new Set(arrayCompareInput);
-  const sizeOfClientInput = arrayClientInput.length;
+  // Get lengths of both text arrays
+  let comparisonTextLength = comparisonTextArray.length;
+  const originalTextLength = originalTextArray.length;
 
-  // Check for matching sequences of 13 words
-  for (let i = 0; i <= sizeOfClientInput - 13; i++) {
-    const compareClient = arrayClientInput.slice(i, i + 13);
+  // Iterate over comparisonTextArray in 13-word windows
+  for (let z = 0; z <= comparisonTextLength - 13; z++) {
+    let comparisonWindow = comparisonTextArray.slice(z, z + 13);
+    let comparisonWindowSet = new Set(comparisonWindow);
 
-    // If all words in sequence match, highlight them
-    if (compareClient.every((word) => compareSet.has(word))) {
-      const colorCommonElement = compareClient.map(
-        (common) => `<span style="color:red">${common}</span>`
-      );
-      copyClientInput01.splice(i, 13, ...colorCommonElement);
+    // Iterate over originalTextArray in 13-word windows
+    for (let i = 0; i <= originalTextLength - 13; i++) {
+      const originalWindow = originalTextArray.slice(i, i + 13);
+
+      // If all words in sequence match, highlight them
+      if (originalWindow.every((word) => comparisonWindowSet.has(word))) {
+        const highlightedWindow = originalWindow.map(
+          (word) => `<span style="color:red">${word}</span>`
+        );
+        highlightedTextArray.splice(i, 13, ...highlightedWindow);
+      }
     }
   }
 }
