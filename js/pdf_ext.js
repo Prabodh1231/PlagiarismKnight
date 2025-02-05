@@ -1,7 +1,7 @@
 /**
  * This script handles the drag-and-drop functionality for PDF and DOCX files,
  * extracts text from the files, and compares the text for plagiarism detection.
- * @author [Your Name]
+ * @author [Prabodh Singh]
  * @version 1.0.0
  */
 
@@ -249,75 +249,64 @@ function getFinalDocxFile(docxFile) {
  */
 async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
   let cleanedClientInput;
+  let DoxcText;
 
-  try {
-    // Process DOCX file if valid
-    if (docxFile && docxFile.name.endsWith(".docx")) {
-      const arrayBuffer = await docxFile.arrayBuffer();
-      // Extract raw text using mammoth
-      const result = await mammoth.extractRawText({ arrayBuffer });
-      // Clean and standardize the text
-      cleanedClientInput = cleanWord(result.value);
-      // Display processed text
-      output.innerHTML = `<p>${cleanedClientInput}</p>`;
-    }
-
-    // Validate text extraction
-    if (!cleanedClientInput) {
-      throw new Error("No text could be extracted from the DOCX file");
-    }
-
-    // Split input text into array for comparison
-    let arrayClientInput = cleanedClientInput.split(" ");
-    let copyClientInput01 = [...arrayClientInput];
-    let allResults = "";
-
-    // Update UI to show processing status
-    outputDiv.textContent = "Processing PDFs...";
-
-    /**
-     * Process each PDF file and extract text
-     * Returns array of promises for parallel processing
-     */
-    const pdfExtractionPromises = pdfFiles.map(async (file) => {
-      try {
-        // Extract and clean text from PDF
-        const text = await extractTextFromPDF(file);
-        const cleaned_text = cleanWord(text);
-        let arrayCompareInput = cleaned_text.split(" ");
-
-        // Compare texts and find common elements
-        findCommonElements(
-          arrayClientInput,
-          arrayCompareInput,
-          copyClientInput01
-        );
-
-        // Format results for display
-        return `File: ${file.name}\n\n${cleaned_text}\n\n------------------------\n\n`;
-      } catch (error) {
-        return `Error processing ${file.name}: ${error.message}\n\n`;
-      }
-    });
-
-    // Wait for all PDF processing to complete
-    const pdfResults = await Promise.allSettled(pdfExtractionPromises);
-
-    // Filter and combine successful results
-    const fulfilledResults = pdfResults
-      .filter((result) => result.status === "fulfilled")
-      .map((result) => result.value);
-
-    // Combine and display results
-    allResults = fulfilledResults.join("");
-
-    // Format highlighted text for display
-    let highlightedTextString = copyClientInput01.join(" ");
-    resultOutput.innerHTML = highlightedTextString;
-    outputDiv.textContent = allResults || "No text extracted from PDFs.";
-  } catch (error) {
-    throw new Error(`Processing error: ${error.message}`);
+  if (docxFile && docxFile.name.endsWith(".docx")) {
+    DoxcText = await extractDocxText(docxFile);
+    output.innerHTML = DoxcText;
   }
+
+  let DocxArray = parseAttributes(DoxcText);
+  let DocxTextWord = separateWordsAndTags(DocxArray);
+
+  // Split input text into array for comparison
+  let arrayClientInput = cleanedClientInput.split(" ");
+  let copyClientInput01 = [...arrayClientInput];
+  let allResults = "";
+
+  // Update UI to show processing status
+  outputDiv.textContent = "Processing PDFs...";
+
+  /**
+   * Process each PDF file and extract text
+   * Returns array of promises for parallel processing
+   */
+  const pdfExtractionPromises = pdfFiles.map(async (file) => {
+    try {
+      // Extract and clean text from PDF
+      const text = await extractTextFromPDF(file);
+      const cleaned_text = cleanWord(text);
+      let arrayCompareInput = cleaned_text.split(" ");
+
+      // Compare texts and find common elements
+      findCommonElements(
+        arrayClientInput,
+        arrayCompareInput,
+        copyClientInput01
+      );
+
+      // Format results for display
+      return `File: ${file.name}\n\n${cleaned_text}\n\n------------------------\n\n`;
+    } catch (error) {
+      return `Error processing ${file.name}: ${error.message}\n\n`;
+    }
+  });
+
+  // Wait for all PDF processing to complete
+  const pdfResults = await Promise.allSettled(pdfExtractionPromises);
+
+  // Filter and combine successful results
+  const fulfilledResults = pdfResults
+    .filter((result) => result.status === "fulfilled")
+    .map((result) => result.value);
+
+  // Combine and display results
+  allResults = fulfilledResults.join("");
+
+  // Format highlighted text for display
+  let highlightedTextString = copyClientInput01.join(" ");
+  resultOutput.innerHTML = highlightedTextString;
+  outputDiv.textContent = allResults || "No text extracted from PDFs.";
 }
 
 /**
@@ -395,11 +384,204 @@ function cleanWord(text) {
     text
       // Normalize Unicode characters
       .normalize("NFD")
-      // Remove diacritics and non-alphanumeric chars
-      .replace(/[\u0300-\u036f]|[^a-zA-Z0-9 ]|\s+/g, " ")
+      // Remove diacritics and non-alphabetic characters
+      .replace(/[\u0300-\u036f]|[^a-zA-Z0-9 ]/g, "")
+      // Replace multiple spaces with a single space
+      .replace(/\s+/g, " ")
       // Remove leading/trailing whitespace
       .trim()
       // Convert to lowercase for case-insensitive comparison
       .toLowerCase()
   );
+}
+
+async function extractDocxText(file) {
+  try {
+    const reader = new FileReader();
+    reader.readAsArrayBuffer(file);
+
+    return new Promise((resolve, reject) => {
+      reader.onload = async function () {
+        const arrayBuffer = reader.result;
+        const result = await mammoth.convertToHtml({
+          arrayBuffer: arrayBuffer,
+        });
+        resolve(result.value);
+      };
+
+      reader.onerror = function () {
+        reject("Error reading file");
+      };
+    });
+  } catch (error) {
+    console.error("Error processing document:", error);
+    throw error;
+  }
+}
+
+function convertToObjects(contentArray) {
+  let id = 0;
+  const result = [];
+
+  // List of valid HTML tags based on Mammoth.js output
+  const validTags = [
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6", // Headings
+    "p", // Paragraph
+    "ul",
+    "ol",
+    "li", // Lists
+    "strong",
+    "em",
+    "u",
+    "sup",
+    "sub", // Text formatting
+    "a", // Links
+    "img", // Images
+    "table",
+    "tr",
+    "td",
+    "th", // Tables
+    "br", // Line breaks
+    "blockquote", // Blockquotes
+    "pre",
+    "code", // Code
+  ];
+
+  // Helper function to parse attributes from tag content
+  function parseAttributes(tagContent) {
+    const attributes = {};
+    const attrRegex = /([a-zA-Z-]+)=["'](.*?)["']/g;
+    let match;
+
+    while ((match = attrRegex.exec(tagContent)) !== null) {
+      attributes[match[1]] = match[2];
+    }
+
+    return attributes;
+  }
+
+  // Helper function to find the next valid tag
+  function findNextValidTag(str, startPos) {
+    let pos = startPos;
+    while (pos < str.length) {
+      if (str[pos] === "<") {
+        const potentialTagEnd = str.indexOf(">", pos);
+        if (potentialTagEnd !== -1) {
+          const tagContent = str.substring(pos, potentialTagEnd + 1);
+          const tagMatch = tagContent.match(/^<\/?([a-zA-Z0-9]+)/);
+          if (tagMatch && validTags.includes(tagMatch[1])) {
+            return pos;
+          }
+        }
+      }
+      pos++;
+    }
+    return -1;
+  }
+
+  // Helper function to process a single string
+  function processString(str) {
+    const result = [];
+    let currentPosition = 0;
+
+    while (currentPosition < str.length) {
+      if (str[currentPosition] === "<") {
+        const nextValidTagPos = findNextValidTag(str, currentPosition);
+
+        if (nextValidTagPos === currentPosition) {
+          // We're at a valid tag
+          const tagEnd = str.indexOf(">", currentPosition);
+          const tagContent = str.substring(currentPosition, tagEnd + 1);
+          const tagMatch = tagContent.match(/^<\/?([a-zA-Z0-9]+)/);
+
+          const tagObject = {
+            id: id++,
+            type: "tag",
+            content: tagContent,
+            tagName: tagMatch[1],
+          };
+
+          result.push(tagObject);
+          currentPosition = tagEnd + 1;
+        } else if (nextValidTagPos === -1) {
+          // No more valid tags, treat rest as text
+          const words = str
+            .substring(currentPosition)
+            .split(" ")
+            .filter((word) => word.length > 0);
+          words.forEach((word) => {
+            result.push({
+              id: id++,
+              type: "word",
+              content: word,
+            });
+          });
+          break;
+        } else {
+          // Text until next valid tag
+          const textContent = str.substring(currentPosition, nextValidTagPos);
+          const words = textContent
+            .split(" ")
+            .filter((word) => word.length > 0);
+          words.forEach((word) => {
+            result.push({
+              id: id++,
+              type: "word",
+              content: word,
+            });
+          });
+          currentPosition = nextValidTagPos;
+        }
+      } else {
+        // Handle regular text until next '<'
+        const nextTag = str.indexOf("<", currentPosition);
+        const wordEnd = nextTag === -1 ? str.length : nextTag;
+
+        const words = str
+          .substring(currentPosition, wordEnd)
+          .split(" ")
+          .filter((word) => word.length > 0);
+
+        words.forEach((word) => {
+          result.push({
+            id: id++,
+            type: "word",
+            content: word,
+          });
+        });
+
+        currentPosition = wordEnd;
+      }
+    }
+
+    return result;
+  }
+
+  // Process each item in the input array
+  contentArray.forEach((content) => {
+    const objects = processString(content);
+    result.push(...objects);
+  });
+
+  return result;
+}
+
+function separateWordsAndTags(inputArray) {
+  const words = [];
+  const tags = [];
+
+  inputArray.forEach((item) => {
+    if (item.type === "word") {
+      words.push({ id: item.id, content: item.content });
+    } else if (item.type === "tag") {
+      tags.push({ id: item.id, content: item.content });
+    }
+  });
+
+  return { words, tags };
 }
