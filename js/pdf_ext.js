@@ -2,7 +2,7 @@
  * This script handles the drag-and-drop functionality for PDF and DOCX files,
  * extracts text from the files, and compares the text for plagiarism detection.
  * @author [Prabodh Singh]
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 // Import PDF.js library and configure worker
@@ -248,7 +248,7 @@ function getFinalDocxFile(docxFile) {
  * @throws {Error} - Throws an error if there is an issue processing the DOCX or PDF files.
  */
 async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
-  let cleanedClientInput;
+  // let cleanedClientInput;
   let DoxcText;
 
   if (docxFile && docxFile.name.endsWith(".docx")) {
@@ -256,13 +256,43 @@ async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
     output.innerHTML = DoxcText;
   }
 
-  let DocxArray = parseAttributes(DoxcText);
-  let DocxTextWord = separateWordsAndTags(DocxArray);
+  let DocxArray = separateWordsAndTags(convertToObjects(DoxcText));
+  console.log(DocxArray);
+  let DocxTextWord = JSON.parse(JSON.stringify(DocxArray.words));
+  console.log(DocxTextWord);
 
-  // Split input text into array for comparison
-  let arrayClientInput = cleanedClientInput.split(" ");
-  let copyClientInput01 = [...arrayClientInput];
-  let allResults = "";
+  DocxTextWord = cleanDocxTextWord(DocxTextWord);
+  let rollingWindows = createRollingWindows(DocxTextWord, 11);
+
+  let colorIndex = 0; // Initialize the color index
+  const colors = [
+    { name: "Classic Yellow", hex: "#FFEB3B" },
+    { name: "Soft Yellow", hex: "#FFF59D" },
+    { name: "Pale Yellow", hex: "#FFFDE7" },
+    { name: "Mint Green", hex: "#E8F5E9" },
+    { name: "Light Green", hex: "#C8E6C9" },
+    { name: "Seafoam Green", hex: "#B2DFDB" },
+    { name: "Sky Blue", hex: "#E3F2FD" },
+    { name: "Baby Blue", hex: "#BBDEFB" },
+    { name: "Powder Blue", hex: "#B3E5FC" },
+    { name: "Peach", hex: "#FFE0B2" },
+    { name: "Apricot", hex: "#FFCCBC" },
+    { name: "Coral", hex: "#FFCDD2" },
+    { name: "Rose", hex: "#F8BBD0" },
+    { name: "Light Pink", hex: "#F5E6E8" },
+    { name: "Blush Pink", hex: "#FCE4EC" },
+    { name: "Lavender", hex: "#F3E5F5" },
+    { name: "Light Purple", hex: "#EDE7F6" },
+    { name: "Periwinkle", hex: "#E8EAF6" },
+    { name: "Cream", hex: "#FFF8E1" },
+    { name: "Ivory", hex: "#FAFAFA" },
+    { name: "Mint Cream", hex: "#E0F2F1" },
+    { name: "Azure", hex: "#E1F5FE" },
+    { name: "Honeydew", hex: "#F1F8E9" },
+    { name: "Linen", hex: "#FFF3E0" },
+  ];
+
+  let allResults = [];
 
   // Update UI to show processing status
   outputDiv.textContent = "Processing PDFs...";
@@ -275,73 +305,30 @@ async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
     try {
       // Extract and clean text from PDF
       const text = await extractTextFromPDF(file);
-      const cleaned_text = cleanWord(text);
-      let arrayCompareInput = cleaned_text.split(" ");
+      let database_cleaned_text = cleanWord(text);
+      database_cleaned_text = slidingWindow(database_cleaned_text);
 
-      // Compare texts and find common elements
-      findCommonElements(
-        arrayClientInput,
-        arrayCompareInput,
-        copyClientInput01
-      );
+      let color = colors[colorIndex];
+      colorIndex = (colorIndex + 1) % colors.length; // Move to the next color, looping if necessary
 
-      // Format results for display
-      return `File: ${file.name}\n\n${cleaned_text}\n\n------------------------\n\n`;
+      let commonIds = findMatchingIds(rollingWindows, database_cleaned_text, 8);
+      console.log("Processing:", file.name);
+
+      allResults.push({ Ids: commonIds, file: file.name, color: color });
     } catch (error) {
-      return `Error processing ${file.name}: ${error.message}\n\n`;
+      console.error(`Error processing ${file.name}: ${error.message}`);
+      return `Error processing ${file.name}: ${error.message}`;
     }
   });
 
   // Wait for all PDF processing to complete
-  const pdfResults = await Promise.allSettled(pdfExtractionPromises);
+  await Promise.allSettled(pdfExtractionPromises);
 
-  // Filter and combine successful results
-  const fulfilledResults = pdfResults
-    .filter((result) => result.status === "fulfilled")
-    .map((result) => result.value);
+  // Update DocxArray with highlighted text
+  DocxArray.words = addSpanTagsAndModify(DocxArray.words, allResults);
 
-  // Combine and display results
-  allResults = fulfilledResults.join("");
-
-  // Format highlighted text for display
-  let highlightedTextString = copyClientInput01.join(" ");
-  resultOutput.innerHTML = highlightedTextString;
-  outputDiv.textContent = allResults || "No text extracted from PDFs.";
-}
-
-/**
- * Finds and highlights common elements between input texts
- * @param {string[]} originalTextArray - Original input text array
- * @param {string[]} comparisonTextArray - Text to compare against
- * @param {string[]} highlightedTextArray - Copy of input for highlighting
- */
-function findCommonElements(
-  originalTextArray,
-  comparisonTextArray,
-  highlightedTextArray
-) {
-  // Get lengths of both text arrays
-  let comparisonTextLength = comparisonTextArray.length;
-  const originalTextLength = originalTextArray.length;
-
-  // Iterate over comparisonTextArray in 13-word windows
-  for (let z = 0; z <= comparisonTextLength - 13; z++) {
-    let comparisonWindow = comparisonTextArray.slice(z, z + 13);
-    let comparisonWindowSet = new Set(comparisonWindow);
-
-    // Iterate over originalTextArray in 13-word windows
-    for (let i = 0; i <= originalTextLength - 13; i++) {
-      const originalWindow = originalTextArray.slice(i, i + 13);
-
-      // If all words in sequence match, highlight them
-      if (originalWindow.every((word) => comparisonWindowSet.has(word))) {
-        const highlightedWindow = originalWindow.map(
-          (word) => `<span style="color:red">${word}</span>`
-        );
-        highlightedTextArray.splice(i, 13, ...highlightedWindow);
-      }
-    }
-  }
+  let finalresult = combineWordsAndTagsInOrder(DocxArray);
+  resultOutput.innerHTML = finalresult;
 }
 
 /**
@@ -419,7 +406,7 @@ async function extractDocxText(file) {
   }
 }
 
-function convertToObjects(contentArray) {
+function convertToObjects(mammoth_string) {
   let id = 0;
   const result = [];
 
@@ -451,19 +438,6 @@ function convertToObjects(contentArray) {
     "pre",
     "code", // Code
   ];
-
-  // Helper function to parse attributes from tag content
-  function parseAttributes(tagContent) {
-    const attributes = {};
-    const attrRegex = /([a-zA-Z-]+)=["'](.*?)["']/g;
-    let match;
-
-    while ((match = attrRegex.exec(tagContent)) !== null) {
-      attributes[match[1]] = match[2];
-    }
-
-    return attributes;
-  }
 
   // Helper function to find the next valid tag
   function findNextValidTag(str, startPos) {
@@ -563,10 +537,8 @@ function convertToObjects(contentArray) {
   }
 
   // Process each item in the input array
-  contentArray.forEach((content) => {
-    const objects = processString(content);
-    result.push(...objects);
-  });
+  const objects = processString(mammoth_string);
+  result.push(...objects);
 
   return result;
 }
@@ -577,11 +549,134 @@ function separateWordsAndTags(inputArray) {
 
   inputArray.forEach((item) => {
     if (item.type === "word") {
-      words.push({ id: item.id, content: item.content });
+      words.push({
+        id: item.id,
+        content: item.content,
+        modified: false,
+        color: "white",
+      });
     } else if (item.type === "tag") {
       tags.push({ id: item.id, content: item.content });
     }
   });
 
   return { words, tags };
+}
+
+function cleanDocxTextWord(wordsArray) {
+  // Clean each item in the array
+  wordsArray.forEach((item) => {
+    if (item.content) {
+      const cleanedContent = cleanWord(item.content);
+      item.content = cleanedContent;
+    }
+    delete item.modified; // Remove the 'modified' property if it exists
+    delete item.color; // Remove the 'color' property if it exists
+  });
+
+  // Filter out items that have only special characters in 'content'
+  return wordsArray.filter((item) => {
+    const hasValidContent = /[a-zA-Z0-9]/.test(item.content);
+    return hasValidContent;
+  });
+}
+
+function createRollingWindows(data, windowSize = 11) {
+  let result = [];
+
+  for (let i = 0; i <= data.length - windowSize; i++) {
+    let windowSlice = data.slice(i, i + windowSize);
+
+    result.push({
+      ids: windowSlice.map((item) => item.id),
+      contents: windowSlice.map((item) => item.content),
+    });
+  }
+
+  return result;
+}
+
+function findMatchingIds(rollingWindows, inputContents, matchThreshold = 8) {
+  let matchingIds = [];
+  for (let input of inputContents) {
+    for (let window of rollingWindows) {
+      // Get the IDs of matching contents
+      let matchedItems = window.contents
+        .map((content, index) =>
+          input.includes(content) ? window.ids[index] : null
+        )
+        .filter((id) => id !== null); // Remove null values (non-matching items)
+
+      // If at least `matchThreshold` matches, add these IDs to the result
+      if (matchedItems.length >= matchThreshold) {
+        matchingIds.push(...matchedItems);
+      }
+    }
+  }
+
+  return [...new Set(matchingIds)]; // Remove duplicates if any
+}
+
+function slidingWindow(pdf_text) {
+  let pdf_text_array = pdf_text.split(" ");
+  let result = [];
+
+  for (let i = 0; i <= pdf_text_array.length - 10; i++) {
+    let window = pdf_text_array.slice(i, i + 10);
+    result.push(window);
+  }
+
+  return result;
+}
+
+function addSpanTagsAndModify(array, allResults) {
+  return array.map((item) => {
+    // Check if any result's Ids contain this item's id
+    const matchingResult = allResults.find(
+      (result) => result.Ids.includes(item.id) && !item.modified
+    );
+
+    if (matchingResult) {
+      // Wrap the content in a span tag with the color from the matching result
+      const modifiedContent = `<span style="background-color: ${matchingResult.color.hex}">${item.content}</span>`;
+      console.log(modifiedContent);
+      return {
+        ...item,
+        content: modifiedContent,
+        modified: true,
+        color: matchingResult.color.name,
+      };
+    }
+    return item; // Return the item unchanged if no matching result or already modified
+  });
+}
+
+function combineWordsAndTagsInOrder(data) {
+  // Combine words and tags into a single array
+  const combined = [...data.words, ...data.tags];
+
+  // Sort by id
+  combined.sort((a, b) => a.id - b.id);
+
+  // Initialize result array
+  let result = [];
+
+  for (let i = 0; i < combined.length; i++) {
+    const currentItem = combined[i];
+    const nextItem = combined[i + 1];
+
+    // Add the current item's content
+    result.push(currentItem.content);
+
+    // Add space if:
+    // 1. This is not the last item
+    // 3. Next item is also a word
+    // 4. Current item's content is not a single character (like '/')
+    if (nextItem && currentItem.content.length > 1) {
+      result.push(" ");
+    }
+  }
+
+  // Join the final array
+  return result.join("");
 }
