@@ -3,14 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>File Upload Drag and Drop</title>
+    <title>Plagiarism Checker</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="container">
       <!-- Upload Area 1 -->
-      <div class="upload-area" id="uploadArea1">
-        <p>Drag & Drop File Here</p>
+      <div class="upload-area" id="uploadAreaPdf">
+        <p>
+          Create Your Database <br />
+          Drag & Drop Pdf File Here
+        </p>
         <button onclick="document.getElementById('fileInput1').click()">
           Select File
         </button>
@@ -25,8 +28,11 @@
       </div>
 
       <!-- Upload Area 2 -->
-      <div class="upload-area" id="uploadArea2">
-        <p>Drag & Drop File Here</p>
+      <div class="upload-area" id="uploadAreaDocx">
+        <p>
+          Select Your Work For Plagiarism <br />
+          Drag & Drop Docx File Here
+        </p>
         <button onclick="document.getElementById('fileInput2').click()">
           Select File
         </button>
@@ -41,6 +47,15 @@
     <div id="output1"></div>
     <div id="output2"></div>
     <div id="output3"></div>
+
+    <!-- Dialog Box with Loading Screen -->
+    <dialog id="processing-dialog" class="processing-dialog">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p>Processing files...</p>
+        <progress id="progress-bar" value="0" max="100"></progress>
+      </div>
+    </dialog>
 
     <script src="js/mammoth.browser.js"></script>
     <script type="module" src="js/pdf_ext.js"></script>

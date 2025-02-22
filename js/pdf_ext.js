@@ -2,7 +2,7 @@
  * This script handles the drag-and-drop functionality for PDF and DOCX files,
  * extracts text from the files, and compares the text for plagiarism detection.
  * @author [Prabodh Singh]
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 // Import PDF.js library and configure worker
@@ -12,16 +12,22 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.mjs";
 // DOM element references
 const checkPlagiarismButton = document.getElementById("checkplagiarism");
 const outputDiv = document.getElementById("output1");
-const output = document.getElementById("output2");
+const outputDisplayDocx = document.getElementById("output2");
 const resultOutput = document.getElementById("output3");
-const fileInput1 = document.getElementById("fileInput1");
-const fileInput2 = document.getElementById("fileInput2");
-const uploadArea1 = document.getElementById("uploadArea1");
-const uploadArea2 = document.getElementById("uploadArea2");
+const fileInputPdf = document.getElementById("fileInput1");
+const fileInputDocx = document.getElementById("fileInput2");
+const uploadAreaPdf = document.getElementById("uploadAreaPdf");
+const uploadAreaDocx = document.getElementById("uploadAreaDocx");
+const previewPdf = document.getElementById("preview1");
+const previewDocx = document.getElementById("preview2");
+const processingDialog = document.getElementById("processing-dialog"); // More descriptive name
+const progressBar = document.getElementById("progress-bar");
 
-// Global state variables for storing dropped files
-let droppedPdfFiles = [];
-let droppedDocxFile = null;
+// Global state variables for storing dropped files - Consider using a single object to manage file state
+let uploadedFiles = {
+  pdfFiles: [],
+  docxFile: null,
+};
 
 /**
  * Prevents default drag and drop behavior
@@ -33,9 +39,11 @@ function preventDefaults(e) {
 }
 
 // Add event listeners for all drag and drop events
-["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-  uploadArea1.addEventListener(eventName, preventDefaults);
-  uploadArea2.addEventListener(eventName, preventDefaults);
+const dragEventNames = ["dragenter", "dragover", "dragleave", "drop"];
+[uploadAreaPdf, uploadAreaDocx].forEach((uploadArea) => {
+  dragEventNames.forEach((eventName) => {
+    uploadArea.addEventListener(eventName, preventDefaults);
+  });
 });
 
 /**
@@ -57,104 +65,96 @@ const debounce = (func, delay) => {
  * @param {FileList} files - The list of files to process
  * @param {string} previewElementId - ID of the preview container element
  */
-const handleFiles = debounce((files, previewElementId) => {
-  const preview = document.getElementById(previewElementId);
-  if (!preview) {
-    console.error(`Element with ID ${previewElementId} not found.`);
+const handleFilePreview = debounce((files, previewElement) => {
+  if (!previewElement) {
+    console.error(`Preview element not found.`); // More generic error message
     return;
   }
-  // Clear existing preview content
-  preview.innerHTML = "";
+  previewElement.innerHTML = ""; // More efficient to set innerHTML to empty string
 
-  // Generate preview for each file
+  const fragment = document.createDocumentFragment(); // Use document fragment for better performance
   for (const file of files) {
     const fileItem = document.createElement("p");
-    // Display file name and size in KB
     fileItem.textContent = `File: ${file.name} (${(file.size / 1024).toFixed(
       2
     )} KB)`;
-    preview.appendChild(fileItem);
+    fragment.appendChild(fileItem);
   }
-}, 500);
+  previewElement.appendChild(fragment); // Append fragment to DOM once
+}, 300);
 
 /**
  * Initialize drag and drop event handlers when DOM is loaded
  */
 document.addEventListener("DOMContentLoaded", () => {
-  const uploadArea1 = document.getElementById("uploadArea1");
-  const uploadArea2 = document.getElementById("uploadArea2");
-
   /**
-   * Handles dragover event
+   * Handles dragover event - No changes needed, efficient and clear
    * @param {DragEvent} event - The drag event
    */
   const handleDragOver = (event) => {
     event.preventDefault();
     event.currentTarget.classList.add("dragover");
   };
-
   /**
-   * Handles dragleave event
+   * Handles dragleave event - No changes needed, efficient and clear
    * @param {DragEvent} event - The drag event
    */
+
   const handleDragLeave = (event) => {
     event.currentTarget.classList.remove("dragover");
   };
-
   /**
-   * Handles file drop event
+   * Handles file drop event - Refactored to use uploadedFiles object and handleFilePreview function
    * @param {DragEvent} event - The drop event
    */
+
   const handleDrop = (event) => {
     event.preventDefault();
     event.currentTarget.classList.remove("dragover");
     event.currentTarget.classList.remove("dragging");
 
-    // Handle file drops based on upload area
-    if (event.currentTarget.id === "uploadArea1") {
-      droppedPdfFiles = Array.from(event.dataTransfer.files).filter(
+    const files = Array.from(event.dataTransfer.files);
+    const uploadAreaId = event.currentTarget.id;
+
+    if (uploadAreaId === "uploadAreaPdf") {
+      uploadedFiles.pdfFiles = files.filter(
         (file) => file.type === "application/pdf"
       );
-      handleFiles(droppedPdfFiles, "preview1");
-    } else if (event.currentTarget.id === "uploadArea2") {
-      droppedDocxFile = Array.from(event.dataTransfer.files).find((file) =>
-        file.name.endsWith(".docx")
-      );
-      handleFiles([droppedDocxFile].filter(Boolean), "preview2");
+      handleFilePreview(uploadedFiles.pdfFiles, previewPdf);
+    } else if (uploadAreaId === "uploadAreaDocx") {
+      uploadedFiles.docxFile =
+        files.find((file) => file.name.endsWith(".docx")) || null; // Ensure null if no docx
+      handleFilePreview([uploadedFiles.docxFile].filter(Boolean), previewDocx); // Handle null docxFile correctly
     }
   };
 
-  // Add event listeners to upload areas
-  uploadArea1.addEventListener("dragover", handleDragOver);
-  uploadArea1.addEventListener("dragleave", handleDragLeave);
-  uploadArea1.addEventListener("drop", handleDrop);
-
-  uploadArea2.addEventListener("dragover", handleDragOver);
-  uploadArea2.addEventListener("dragleave", handleDragLeave);
-  uploadArea2.addEventListener("drop", handleDrop);
-
-  // File input event handlers for manual file selection
-  fileInput1.addEventListener("change", (event) => {
-    handleFiles(event.target.files, "preview1");
+  // Add event listeners to upload areas -  More efficient to loop and bind once
+  [uploadAreaPdf, uploadAreaDocx].forEach((uploadArea) => {
+    uploadArea.addEventListener("dragover", handleDragOver);
+    uploadArea.addEventListener("dragleave", handleDragLeave);
+    uploadArea.addEventListener("drop", handleDrop);
   });
 
-  fileInput2.addEventListener("change", (event) => {
-    handleFiles(event.target.files, "preview2");
+  // File input event handlers for manual file selection - Directly use handleFilePreview
+  fileInputPdf.addEventListener("change", (event) => {
+    uploadedFiles.pdfFiles = Array.from(event.target.files); // Update global state
+    handleFilePreview(uploadedFiles.pdfFiles, previewPdf);
   });
 
+  fileInputDocx.addEventListener("change", (event) => {
+    uploadedFiles.docxFile = event.target.files[0] || null; // Update global state, handle no file selected
+    handleFilePreview([uploadedFiles.docxFile].filter(Boolean), previewDocx);
+  });
   /**
-   * Handle plagiarism check button click
+   * Handle plagiarism check button click - No major changes here, good structure
    * Initiates text extraction and comparison process
    */
+
   checkPlagiarismButton.addEventListener("click", async () => {
     try {
-      // Show loading state
-      outputDiv.textContent = "Processing files...";
-
-      // Start extraction process
-      await handleExtractButtonClick();
+      outputDiv.textContent = "Processing files..."; // More concise loading message
+      await handleExtractAndCompare(); // Renamed function for clarity
     } catch (error) {
-      // Display any errors that occur
       outputDiv.textContent = `Error: ${error.message}`;
       console.error("Plagiarism check failed:", error);
     }
@@ -166,36 +166,40 @@ document.addEventListener("DOMContentLoaded", () => {
  * @returns {Promise<void>}
  * @throws {Error} If file validation fails
  */
-async function handleExtractButtonClick() {
-  const pdfFiles = getPdfFiles();
-  const docxFile = getDocxFile();
+async function handleExtractAndCompare() {
+  const pdfFiles = uploadedFiles.pdfFiles; // Get files from global state
+  const docxFile = uploadedFiles.docxFile; // Get file from global state
 
-  // Validate file selections
-  validateFiles(pdfFiles, docxFile);
+  validateFiles(pdfFiles, docxFile); // Validate files upfront // No need for merging and sorting based on timestamps as per current logic, simplifying
 
-  // Merge and sort files by timestamp
-  const finalPdfFiles = mergePdfFiles(pdfFiles);
-  const finalDocx = getFinalDocxFile(docxFile);
+  const finalPdfFiles = pdfFiles;
+  const finalDocx = docxFile;
 
-  // Process files and extract text
-  await extractTextFromMultiplePDFs(finalPdfFiles, finalDocx);
+  processingDialog.showModal(); // Show dialog before processing
+  progressBar.value = 0;
+
+  try {
+    await extractTextAndCompare(finalPdfFiles, finalDocx); // More descriptive function name
+  } finally {
+    processingDialog.close(); // Ensure dialog is closed even if error occurs
+  }
 }
 
-/**
- * Retrieves PDF files from file input
- * @returns {File[]} Array of PDF files
- */
-function getPdfFiles() {
-  return Array.from(fileInput1.files);
-}
+// /**
+//  * Retrieves PDF files from file input
+//  * @returns {File[]} Array of PDF files
+//  */
+// function getPdfFiles() {
+//   return Array.from(fileInputPdf.files);
+// }
 
-/**
- * Retrieves DOCX file from file input
- * @returns {File|null} The DOCX file or null
- */
-function getDocxFile() {
-  return fileInput2.files[0];
-}
+// /**
+//  * Retrieves DOCX file from file input
+//  * @returns {File|null} The DOCX file or null
+//  */
+// function getDocxFile() {
+//   return fileInputDocx.files[0];
+// }
 
 /**
  * Validates that required files are present
@@ -204,13 +208,10 @@ function getDocxFile() {
  * @throws {Error} If required files are missing
  */
 function validateFiles(pdfFiles, docxFile) {
-  // Check for at least one PDF file
-  if (!droppedPdfFiles.length && !pdfFiles.length) {
+  if (!pdfFiles.length) {
     throw new Error("Please upload at least one PDF file.");
   }
-
-  // Check for DOCX file
-  if (!docxFile && !droppedDocxFile) {
+  if (!docxFile) {
     throw new Error("Please upload a .docx file.");
   }
 }
@@ -225,20 +226,6 @@ function mergePdfFiles(pdfFiles) {
 }
 
 /**
- * Gets the final DOCX file by comparing timestamps of uploaded and dropped files
- * @param {File} docxFile - The uploaded DOCX file
- * @returns {File} The most recently modified DOCX file
- */
-function getFinalDocxFile(docxFile) {
-  // Compare timestamps and return the most recent file
-  return docxFile && droppedDocxFile
-    ? docxFile.lastModified > droppedDocxFile.lastModified
-      ? docxFile
-      : droppedDocxFile
-    : docxFile || droppedDocxFile;
-}
-
-/**
  * Extracts text from multiple PDF files and compares it with the text extracted from a DOCX file.
  * Highlights common elements between the DOCX text and each PDF text.
  *
@@ -247,22 +234,18 @@ function getFinalDocxFile(docxFile) {
  * @returns {Promise<void>} - A promise that resolves when the text extraction and comparison are complete.
  * @throws {Error} - Throws an error if there is an issue processing the DOCX or PDF files.
  */
-async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
-  // let cleanedClientInput;
-  let DoxcText;
+async function extractTextAndCompare(pdfFiles, docxFile) {
+  let docxText;
 
   if (docxFile && docxFile.name.endsWith(".docx")) {
-    DoxcText = await extractDocxText(docxFile);
-    output.innerHTML = DoxcText;
+    docxText = await extractDocxText(docxFile);
+    outputDisplayDocx.innerHTML = docxText;
   }
 
-  let DocxArray = separateWordsAndTags(convertToObjects(DoxcText));
-  console.log(DocxArray);
-  let DocxTextWord = JSON.parse(JSON.stringify(DocxArray.words));
-  console.log(DocxTextWord);
-
-  DocxTextWord = cleanDocxTextWord(DocxTextWord);
-  let rollingWindows = createRollingWindows(DocxTextWord, 11);
+  let docxArray = separateWordsAndTags(convertToObjects(docxText));
+  let docxTextWord = JSON.parse(JSON.stringify(docxArray.words));
+  docxTextWord = cleanDocxTextWord(docxTextWord);
+  let rollingWindows = createRollingWindows(docxTextWord, 11);
 
   let colorIndex = 0; // Initialize the color index
   const colors = [
@@ -305,13 +288,13 @@ async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
     try {
       // Extract and clean text from PDF
       const text = await extractTextFromPDF(file);
-      let database_cleaned_text = cleanWord(text);
-      database_cleaned_text = slidingWindow(database_cleaned_text);
+      let databaseCleanedText = cleanWord(text);
+      databaseCleanedText = slidingWindow(databaseCleanedText);
 
       let color = colors[colorIndex];
       colorIndex = (colorIndex + 1) % colors.length; // Move to the next color, looping if necessary
 
-      let commonIds = findMatchingIds(rollingWindows, database_cleaned_text, 8);
+      let commonIds = findMatchingIds(rollingWindows, databaseCleanedText, 8);
       console.log("Processing:", file.name);
 
       allResults.push({ Ids: commonIds, file: file.name, color: color });
@@ -325,10 +308,10 @@ async function extractTextFromMultiplePDFs(pdfFiles, docxFile) {
   await Promise.allSettled(pdfExtractionPromises);
 
   // Update DocxArray with highlighted text
-  DocxArray.words = addSpanTagsAndModify(DocxArray.words, allResults);
+  docxArray.words = addSpanTagsAndModify(docxArray.words, allResults);
 
-  let finalresult = combineWordsAndTagsInOrder(DocxArray);
-  resultOutput.innerHTML = finalresult;
+  let finalResult = combineWordsAndTagsInOrder(docxArray);
+  resultOutput.innerHTML = finalResult;
 }
 
 /**
@@ -383,30 +366,26 @@ function cleanWord(text) {
 }
 
 async function extractDocxText(file) {
-  try {
+  return new Promise((resolve, reject) => {
+    // Simplified Promise creation
     const reader = new FileReader();
-    reader.readAsArrayBuffer(file);
-
-    return new Promise((resolve, reject) => {
-      reader.onload = async function () {
+    reader.onload = async () => {
+      try {
         const arrayBuffer = reader.result;
         const result = await mammoth.convertToHtml({
           arrayBuffer: arrayBuffer,
         });
         resolve(result.value);
-      };
-
-      reader.onerror = function () {
-        reject("Error reading file");
-      };
-    });
-  } catch (error) {
-    console.error("Error processing document:", error);
-    throw error;
-  }
+      } catch (error) {
+        reject("Error converting DOCX to HTML: " + error.message); // More informative error
+      }
+    };
+    reader.onerror = () => reject("Error reading file"); // Simplified error handling
+    reader.readAsArrayBuffer(file);
+  });
 }
 
-function convertToObjects(mammoth_string) {
+function convertToObjects(mammothString) {
   let id = 0;
   const result = [];
 
@@ -537,7 +516,7 @@ function convertToObjects(mammoth_string) {
   }
 
   // Process each item in the input array
-  const objects = processString(mammoth_string);
+  const objects = processString(mammothString);
   result.push(...objects);
 
   return result;
@@ -617,12 +596,12 @@ function findMatchingIds(rollingWindows, inputContents, matchThreshold = 8) {
   return [...new Set(matchingIds)]; // Remove duplicates if any
 }
 
-function slidingWindow(pdf_text) {
-  let pdf_text_array = pdf_text.split(" ");
+function slidingWindow(pdfText) {
+  let pdfTextArray = pdfText.split(" ");
   let result = [];
 
-  for (let i = 0; i <= pdf_text_array.length - 10; i++) {
-    let window = pdf_text_array.slice(i, i + 10);
+  for (let i = 0; i <= pdfTextArray.length - 10; i++) {
+    let window = pdfTextArray.slice(i, i + 10);
     result.push(window);
   }
 

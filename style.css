@@ -44,17 +44,30 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.upload-area.dragover {
-  background-color: #2c6ff5;
-  border-color: #1122d9;
+#uploadAreaPdf.dragover {
+  background-color: #28a745; /* Green */
+  border-color: #218838; /* Darker Green */
+  transform: scale(1.1); /* Zoom effect */
+  transition: transform 0.3s ease; /* Smooth transition */
+}
+
+#uploadAreaDocx.dragover {
+  background-color: #ffc107;
+  border-color: #ffbb33;
+  transform: scale(1.1); /* Zoom effect */
+  transition: transform 0.3s ease; /* Smooth transition */
 }
 
 .upload-area button:hover {
   background: #0056b3;
 }
 
-.upload-area:hover {
-  border-color: #007bff;
+#uploadAreaDocx:hover {
+  border-color: #ffbb33;
+}
+
+#uploadAreaPdf:hover {
+  border-color: #218838;
 }
 
 .file-input {
@@ -91,7 +104,7 @@ body {
   background: #f1f1f1;
 }
 
-#checkplagrism {
+#checkplagiarism {
   background: #28a745;
   color: white;
   border: none;
@@ -104,13 +117,15 @@ body {
   transition: background-color 0.3s ease;
 }
 
-#checkplagrism:hover {
+#checkplagiarism:hover {
   background: #218838;
 }
 
 #output1,
 #output2,
 #output3 {
+  justify-self: center;
+  width: 80%;
   margin-top: 20px;
   padding: 10px;
   background: #f8f8f8;
@@ -119,4 +134,48 @@ body {
   min-height: 50px;
   font-size: 14px;
   color: #555;
+}
+
+/* Dialog Box */
+.processing-dialog {
+  border: none;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  text-align: center;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-spinner {
+  border: 8px solid rgba(0, 0, 0, 0.1);
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.processing-dialog p {
+  margin-bottom: 10px;
+}
+
+.processing-dialog progress {
+  width: 100%;
+  height: 20px;
 }
