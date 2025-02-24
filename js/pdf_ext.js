@@ -20,7 +20,7 @@ const uploadAreaPdf = document.getElementById("uploadAreaPdf");
 const uploadAreaDocx = document.getElementById("uploadAreaDocx");
 const previewPdf = document.getElementById("preview1");
 const previewDocx = document.getElementById("preview2");
-const processingDialog = document.getElementById("processing-dialog"); // More descriptive name
+const processingDialog = document.getElementById("processing-dialog");
 const progressBar = document.getElementById("progress-bar");
 
 // Global state variables for storing dropped files - Consider using a single object to manage file state
@@ -145,11 +145,11 @@ document.addEventListener("DOMContentLoaded", () => {
     uploadedFiles.docxFile = event.target.files[0] || null; // Update global state, handle no file selected
     handleFilePreview([uploadedFiles.docxFile].filter(Boolean), previewDocx);
   });
+
   /**
    * Handle plagiarism check button click - No major changes here, good structure
    * Initiates text extraction and comparison process
    */
-
   checkPlagiarismButton.addEventListener("click", async () => {
     try {
       outputDiv.textContent = "Processing files..."; // More concise loading message
@@ -191,14 +191,6 @@ async function handleExtractAndCompare() {
 //  */
 // function getPdfFiles() {
 //   return Array.from(fileInputPdf.files);
-// }
-
-// /**
-//  * Retrieves DOCX file from file input
-//  * @returns {File|null} The DOCX file or null
-//  */
-// function getDocxFile() {
-//   return fileInputDocx.files[0];
 // }
 
 /**

@@ -7,46 +7,83 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="container">
-      <!-- Upload Area 1 -->
-      <div class="upload-area" id="uploadAreaPdf">
-        <p>
-          Create Your Database <br />
-          Drag & Drop Pdf File Here
-        </p>
-        <button onclick="document.getElementById('fileInput1').click()">
-          Select File
-        </button>
-        <input
-          type="file"
-          id="fileInput1"
-          class="file-input"
-          accept=".pdf"
-          multiple
-          onchange="handleFiles(this.files, 'preview1')"
-        />
-      </div>
+    <!-- Header Section -->
+    <header>
+      <h1>Plagiarism Checker</h1>
+    </header>
 
-      <!-- Upload Area 2 -->
-      <div class="upload-area" id="uploadAreaDocx">
-        <p>
-          Select Your Work For Plagiarism <br />
-          Drag & Drop Docx File Here
-        </p>
-        <button onclick="document.getElementById('fileInput2').click()">
-          Select File
-        </button>
-        <input type="file" id="fileInput2" class="file-input" accept=".docx" />
-      </div>
-      <div class="preview_area">
-        <div id="preview1"></div>
-        <div id="preview2"></div>
-      </div>
+    <!-- Navigation Bar -->
+    <nav>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="container">
+      <!-- Sidebar Section -->
+      <aside class="sidebar">
+        <h2>Instructions</h2>
+        <p>1. Upload a PDF file to create your database.</p>
+        <p>2. Upload a DOCX file to check for plagiarism.</p>
+        <p>3. Click "Check Plagiarism" to analyze the files.</p>
+      </aside>
+
+      <!-- Main Content Section -->
+      <section class="main-content">
+        <!-- Upload Area 1 -->
+        <div class="upload-area" id="uploadAreaPdf">
+          <p>
+            Create Your Database <br />
+            Drag & Drop PDF File Here
+          </p>
+          <button onclick="document.getElementById('fileInput1').click()">
+            Select File
+          </button>
+          <input
+            type="file"
+            id="fileInput1"
+            class="file-input"
+            accept=".pdf"
+            multiple
+            onchange="handleFiles(this.files, 'preview1')"
+          />
+        </div>
+
+        <!-- Upload Area 2 -->
+        <div class="upload-area" id="uploadAreaDocx">
+          <p>
+            Select Your Work for Plagiarism <br />
+            Drag & Drop DOCX File Here
+          </p>
+          <button onclick="document.getElementById('fileInput2').click()">
+            Select File
+          </button>
+          <input
+            type="file"
+            id="fileInput2"
+            class="file-input"
+            accept=".docx"
+          />
+        </div>
+
+        <!-- File Preview Area -->
+        <div class="preview_area">
+          <div id="preview1"></div>
+          <div id="preview2"></div>
+        </div>
+
+        <!-- Check Plagiarism Button -->
+        <button id="checkplagiarism">Check Plagiarism</button>
+
+        <!-- Output Section -->
+        <div id="output1"></div>
+        <div id="output2"></div>
+        <div id="output3"></div>
+      </section>
     </div>
-    <button id="checkplagiarism">Check Plagiarism</button>
-    <div id="output1"></div>
-    <div id="output2"></div>
-    <div id="output3"></div>
 
     <!-- Dialog Box with Loading Screen -->
     <dialog id="processing-dialog" class="processing-dialog">
@@ -56,6 +93,11 @@
         <progress id="progress-bar" value="0" max="100"></progress>
       </div>
     </dialog>
+
+    <!-- Footer Section -->
+    <footer>
+      <p>&copy; 2025 Plagiarism Checker. All rights reserved.</p>
+    </footer>
 
     <script src="js/mammoth.browser.js"></script>
     <script type="module" src="js/pdf_ext.js"></script>
