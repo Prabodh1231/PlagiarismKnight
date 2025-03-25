@@ -2,18 +2,12 @@
  * This script handles the drag-and-drop functionality for PDF and DOCX files,
  * extracts text from the files, and compares the text for plagiarism detection.
  * @author [Prabodh Singh]
- * @version 1.0.2
+ * @version 1.0.4
  */
-
-// Import PDF.js library and configure worker
-import * as pdfjsLib from "./pdf.mjs";
-pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.mjs";
 
 // DOM element references
 const checkPlagiarismButton = document.getElementById("checkplagiarism");
-const outputDiv = document.getElementById("output1");
-const outputDisplayDocx = document.getElementById("output2");
-const resultOutput = document.getElementById("output3");
+const resultOutput = document.getElementById("output");
 const fileInputPdf = document.getElementById("fileInput1");
 const fileInputDocx = document.getElementById("fileInput2");
 const uploadAreaPdf = document.getElementById("uploadAreaPdf");
@@ -67,20 +61,43 @@ const debounce = (func, delay) => {
  */
 const handleFilePreview = debounce((files, previewElement) => {
   if (!previewElement) {
-    console.error(`Preview element not found.`); // More generic error message
+    console.error(`Preview element not found.`);
     return;
   }
-  previewElement.innerHTML = ""; // More efficient to set innerHTML to empty string
 
-  const fragment = document.createDocumentFragment(); // Use document fragment for better performance
+  // Clear previous preview content
+  previewElement.innerHTML = "";
+
+  if (!files || files.length === 0) return;
+
+  const fragment = document.createDocumentFragment(); // Create preview table for better organization
+
+  const table = document.createElement("table");
+  table.className = "file-preview-table"; // Add table header
+
+  const header = document.createElement("tr");
+  header.innerHTML = "<th>File Name</th><th>Size</th>";
+  table.appendChild(header); // Add file rows
+
   for (const file of files) {
-    const fileItem = document.createElement("p");
-    fileItem.textContent = `File: ${file.name} (${(file.size / 1024).toFixed(
-      2
-    )} KB)`;
-    fragment.appendChild(fileItem);
+    const row = document.createElement("tr");
+
+    const nameCell = document.createElement("td");
+    nameCell.textContent = file.name;
+    nameCell.classList.add("word-wrap");
+
+    const sizeCell = document.createElement("td");
+    const sizeKB = (file.size / 1024).toFixed(2);
+    sizeCell.textContent = `${sizeKB} KB`;
+
+    row.appendChild(nameCell);
+    row.appendChild(sizeCell);
+
+    table.appendChild(row);
   }
-  previewElement.appendChild(fragment); // Append fragment to DOM once
+
+  fragment.appendChild(table);
+  previewElement.appendChild(fragment);
 }, 300);
 
 /**
@@ -99,7 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
    * Handles dragleave event - No changes needed, efficient and clear
    * @param {DragEvent} event - The drag event
    */
-
   const handleDragLeave = (event) => {
     event.currentTarget.classList.remove("dragover");
   };
@@ -107,7 +123,6 @@ document.addEventListener("DOMContentLoaded", () => {
    * Handles file drop event - Refactored to use uploadedFiles object and handleFilePreview function
    * @param {DragEvent} event - The drop event
    */
-
   const handleDrop = (event) => {
     event.preventDefault();
     event.currentTarget.classList.remove("dragover");
@@ -117,9 +132,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const uploadAreaId = event.currentTarget.id;
 
     if (uploadAreaId === "uploadAreaPdf") {
-      uploadedFiles.pdfFiles = files.filter(
+      const newPdfFiles = files.filter(
         (file) => file.type === "application/pdf"
       );
+      uploadedFiles.pdfFiles = [
+        ...(uploadedFiles.pdfFiles || []),
+        ...newPdfFiles,
+      ];
       handleFilePreview(uploadedFiles.pdfFiles, previewPdf);
     } else if (uploadAreaId === "uploadAreaDocx") {
       uploadedFiles.docxFile =
@@ -128,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Add event listeners to upload areas -  More efficient to loop and bind once
+  // Add event listeners to upload areas -  More efficient to loop and bind once
   [uploadAreaPdf, uploadAreaDocx].forEach((uploadArea) => {
     uploadArea.addEventListener("dragover", handleDragOver);
     uploadArea.addEventListener("dragleave", handleDragLeave);
@@ -137,7 +156,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // File input event handlers for manual file selection - Directly use handleFilePreview
   fileInputPdf.addEventListener("change", (event) => {
-    uploadedFiles.pdfFiles = Array.from(event.target.files); // Update global state
+    uploadedFiles.pdfFiles = [
+      ...(uploadedFiles.pdfFiles || []),
+      ...Array.from(event.target.files),
+    ]; // Update global state
     handleFilePreview(uploadedFiles.pdfFiles, previewPdf);
   });
 
@@ -152,209 +174,248 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   checkPlagiarismButton.addEventListener("click", async () => {
     try {
-      outputDiv.textContent = "Processing files..."; // More concise loading message
       await handleExtractAndCompare(); // Renamed function for clarity
     } catch (error) {
-      outputDiv.textContent = `Error: ${error.message}`;
       console.error("Plagiarism check failed:", error);
     }
   });
 });
 
 /**
- * Main handler for text extraction process
+ * Main handler for text extraction process - Enhanced with better error handling
  * @returns {Promise<void>}
- * @throws {Error} If file validation fails
  */
 async function handleExtractAndCompare() {
-  const pdfFiles = uploadedFiles.pdfFiles; // Get files from global state
-  const docxFile = uploadedFiles.docxFile; // Get file from global state
-
-  validateFiles(pdfFiles, docxFile); // Validate files upfront // No need for merging and sorting based on timestamps as per current logic, simplifying
-
-  const finalPdfFiles = pdfFiles;
-  const finalDocx = docxFile;
-
-  processingDialog.showModal(); // Show dialog before processing
-  progressBar.value = 0;
+  const pdfFiles = uploadedFiles.pdfFiles;
+  const docxFile = uploadedFiles.docxFile;
 
   try {
-    await extractTextAndCompare(finalPdfFiles, finalDocx); // More descriptive function name
+    // Validate files upfront with proper error display
+    if (!pdfFiles.length) {
+      resultOutput.innerHTML =
+        '<div class="error">Please upload at least one PDF file.</div>';
+      return;
+    }
+    if (!docxFile) {
+      resultOutput.innerHTML =
+        '<div class="error">Please upload a .docx file.</div>';
+      return;
+    }
+
+    processingDialog.showModal(); // Show dialog before processing
+    progressBar.value = 0;
+
+    await extractTextAndCompare(pdfFiles, docxFile);
+  } catch (error) {
+    resultOutput.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+    console.error("Extraction failed:", error);
   } finally {
     processingDialog.close(); // Ensure dialog is closed even if error occurs
   }
 }
 
-// /**
-//  * Retrieves PDF files from file input
-//  * @returns {File[]} Array of PDF files
-//  */
-// function getPdfFiles() {
-//   return Array.from(fileInputPdf.files);
-// }
-
 /**
- * Validates that required files are present
- * @param {File[]} pdfFiles - Array of PDF files
- * @param {File} docxFile - DOCX file
- * @throws {Error} If required files are missing
+ * Generates an HTML summary report of the plagiarism check.
+ * @param {Array<object>} results - The plagiarism check results.
+ * @param {Array<File>} pdfFiles - The list of PDF files checked.
+ * @param {File} docxFile - The DOCX file checked.
+ * @returns {string} - HTML string for the summary report.
  */
-function validateFiles(pdfFiles, docxFile) {
-  if (!pdfFiles.length) {
-    throw new Error("Please upload at least one PDF file.");
-  }
-  if (!docxFile) {
-    throw new Error("Please upload a .docx file.");
-  }
-}
+function generateSummaryReportHTML(
+  results,
+  pdfFiles,
+  docxFile,
+  docxlength
+  // docxArrayWordId
+) {
+  const highlightedSectionsCount = results.length;
+  const pdfFileNames = pdfFiles.map((file) => file.name).join(", ");
+  const docxFileName = docxFile ? docxFile.name : "N/A";
+  const idSet = new Set();
+  let plagiarizedWordCount = 0;
 
-function mergePdfFiles(pdfFiles) {
-  if (pdfFiles.length && droppedPdfFiles.length) {
-    return [...pdfFiles, ...droppedPdfFiles].sort(
-      (a, b) => b.lastModified - a.lastModified
-    );
+  results.forEach((item) => {
+    item.Ids.forEach((id) => {
+      idSet.add(id);
+    });
+  });
+
+  plagiarizedWordCount = idSet.size;
+  const plagiarismPercentage = parseFloat(
+    ((plagiarizedWordCount / docxlength) * 100).toFixed(2)
+  );
+
+  let plagiarismLevelText = "";
+  let plagiarismColor = "";
+
+  if (plagiarismPercentage < 10) {
+    plagiarismLevelText = "Low Plagiarism";
+    plagiarismColor = "green";
+  } else if (plagiarismPercentage < 25) {
+    plagiarismLevelText = "Moderate Plagiarism";
+    plagiarismColor = "orange";
+  } else {
+    plagiarismLevelText = "High Plagiarism";
+    plagiarismColor = "red";
   }
-  return pdfFiles.length ? pdfFiles : droppedPdfFiles;
+
+  let summaryHTML = `
+      <div class="summary-report">
+        <h2>Plagiarism Check Summary</h2>
+        <p><strong>DOCX File:</strong> ${docxFileName}</p>
+        <p><strong>PDF Files:</strong> ${pdfFileNames}</p>
+        <p><strong>Highlighted Sections Detected:</strong> ${highlightedSectionsCount}</p>
+        <div class="plagiarism-percentage" style="color: ${plagiarismColor}; font-size: 1.2em; font-weight: bold; margin-top: 10px;">
+          Plagiarism Level: <span style="display: inline-block; padding: 5px 10px; background-color: #f0f0f0; border-radius: 5px;">${plagiarismLevelText} (${plagiarismPercentage}%)</span>
+        </div>
+        <hr/>
+        <h3>Detailed Highlighted Text:</h3>
+      </div>
+    `;
+
+  let pdfSummary = results.map((item) => {
+    let pdfName = item.file;
+    let pdfColor = item.color.hex;
+    // let similarWord = [];
+    // docxArrayWordId.forEach((wordObj) => {
+    //   if (item.Ids.includes(wordObj.id)) {
+    //     similarWord.push(wordObj.content);
+    //   }
+    // });
+
+    let pdfPercentage = parseFloat(
+      ((item.Ids.length / docxlength) * 100).toFixed(2)
+    );
+
+    return {
+      name: pdfName,
+      // similarWords: similarWord,
+      color: pdfColor,
+      percentage: pdfPercentage,
+    };
+  });
+
+  function createTable(data) {
+    let tableHTML = '<table border="1" cellpadding="10">';
+
+    // Table header
+    tableHTML += "<tr><th>PDF Name</th><th>Color</th><th>Percentage</th></tr>";
+
+    // Table rows
+    data.forEach((row) => {
+      tableHTML += `<tr>
+            <td>${row.name}</td>
+            <td style="background-color:${row.color}">${row.color}</td>
+            <td>${row.percentage}%</td>
+        </tr>`;
+    });
+
+    tableHTML += "</table> <br> <hr/> <br>";
+
+    return tableHTML;
+  }
+
+  summaryHTML += createTable(pdfSummary);
+  return summaryHTML;
 }
 
 /**
  * Extracts text from multiple PDF files and compares it with the text extracted from a DOCX file.
- * Highlights common elements between the DOCX text and each PDF text.
- *
- * @param {File[]} pdfFiles - An array of PDF files to extract text from.
- * @param {File} docxFile - A DOCX file to extract text from.
- * @returns {Promise<void>} - A promise that resolves when the text extraction and comparison are complete.
- * @throws {Error} - Throws an error if there is an issue processing the DOCX or PDF files.
+ * Updated to properly handle worker communication.
  */
 async function extractTextAndCompare(pdfFiles, docxFile) {
-  let docxText;
-
-  if (docxFile && docxFile.name.endsWith(".docx")) {
-    docxText = await extractDocxText(docxFile);
-    outputDisplayDocx.innerHTML = docxText;
-  }
-
-  let docxArray = separateWordsAndTags(convertToObjects(docxText));
-  let docxTextWord = JSON.parse(JSON.stringify(docxArray.words));
-  docxTextWord = cleanDocxTextWord(docxTextWord);
-  let rollingWindows = createRollingWindows(docxTextWord, 11);
-
-  let colorIndex = 0; // Initialize the color index
-  const colors = [
-    { name: "Classic Yellow", hex: "#FFEB3B" },
-    { name: "Soft Yellow", hex: "#FFF59D" },
-    { name: "Pale Yellow", hex: "#FFFDE7" },
-    { name: "Mint Green", hex: "#E8F5E9" },
-    { name: "Light Green", hex: "#C8E6C9" },
-    { name: "Seafoam Green", hex: "#B2DFDB" },
-    { name: "Sky Blue", hex: "#E3F2FD" },
-    { name: "Baby Blue", hex: "#BBDEFB" },
-    { name: "Powder Blue", hex: "#B3E5FC" },
-    { name: "Peach", hex: "#FFE0B2" },
-    { name: "Apricot", hex: "#FFCCBC" },
-    { name: "Coral", hex: "#FFCDD2" },
-    { name: "Rose", hex: "#F8BBD0" },
-    { name: "Light Pink", hex: "#F5E6E8" },
-    { name: "Blush Pink", hex: "#FCE4EC" },
-    { name: "Lavender", hex: "#F3E5F5" },
-    { name: "Light Purple", hex: "#EDE7F6" },
-    { name: "Periwinkle", hex: "#E8EAF6" },
-    { name: "Cream", hex: "#FFF8E1" },
-    { name: "Ivory", hex: "#FAFAFA" },
-    { name: "Mint Cream", hex: "#E0F2F1" },
-    { name: "Azure", hex: "#E1F5FE" },
-    { name: "Honeydew", hex: "#F1F8E9" },
-    { name: "Linen", hex: "#FFF3E0" },
-  ];
-
-  let allResults = [];
-
-  // Update UI to show processing status
-  outputDiv.textContent = "Processing PDFs...";
-
-  /**
-   * Process each PDF file and extract text
-   * Returns array of promises for parallel processing
-   */
-  const pdfExtractionPromises = pdfFiles.map(async (file) => {
-    try {
-      // Extract and clean text from PDF
-      const text = await extractTextFromPDF(file);
-      let databaseCleanedText = cleanWord(text);
-      databaseCleanedText = slidingWindow(databaseCleanedText);
-
-      let color = colors[colorIndex];
-      colorIndex = (colorIndex + 1) % colors.length; // Move to the next color, looping if necessary
-
-      let commonIds = findMatchingIds(rollingWindows, databaseCleanedText, 8);
-      console.log("Processing:", file.name);
-
-      allResults.push({ Ids: commonIds, file: file.name, color: color });
-    } catch (error) {
-      console.error(`Error processing ${file.name}: ${error.message}`);
-      return `Error processing ${file.name}: ${error.message}`;
-    }
-  });
-
-  // Wait for all PDF processing to complete
-  await Promise.allSettled(pdfExtractionPromises);
-
-  // Update DocxArray with highlighted text
-  docxArray.words = addSpanTagsAndModify(docxArray.words, allResults);
-
-  let finalResult = combineWordsAndTagsInOrder(docxArray);
-  resultOutput.innerHTML = finalResult;
-}
-
-/**
- * Extracts text content from a PDF file
- * @param {File} file - PDF file to process
- * @returns {Promise<string>} Extracted text content
- * @throws {Error} If PDF processing fails
- */
-async function extractTextFromPDF(file) {
   try {
-    // Convert file to ArrayBuffer for PDF.js
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = "";
+    // Show processing feedback
+    resultOutput.innerHTML =
+      '<div class="processing">Processing files...</div>'; // Extract DOCX text
 
-    // Process each page of the PDF
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      // Extract and join text items from page
-      const pageText = textContent.items.map((item) => item.str).join(" ");
-      fullText += `Page ${i}:\n${pageText}\n\n`;
-    }
+    let docxText = await extractDocxText(docxFile);
+    let docxArray = separateWordsAndTags(convertToObjects(docxText)); // Create a worker with the correct module type
 
-    return fullText || "No text content found in PDF.";
+    const worker = new Worker(new URL("./plag-worker.js", import.meta.url), {
+      type: "module",
+    });
+    if (!worker) {
+      throw new Error("Failed to create worker");
+    } // Set up progress updates
+
+    let filesProcessed = 0;
+    const totalFiles = pdfFiles.length;
+
+    return new Promise((resolve, reject) => {
+      worker.onmessage = function (event) {
+        try {
+          if (event.data.type === "progress") {
+            // Update progress
+            filesProcessed++;
+            progressBar.value = (filesProcessed / totalFiles) * 100;
+          } else if (event.data.type === "result") {
+            // Process final results
+            const results = event.data.results; // Now that we have results, update DocxArray with highlighted text
+            const docxlength = event.data.docxLength;
+
+            docxArray.words = addSpanTagsAndModify(docxArray.words, results);
+
+            let highlightedTextHTML = combineWordsAndTagsInOrder(docxArray);
+            const summaryReportHTML = generateSummaryReportHTML(
+              results,
+              pdfFiles,
+              docxFile,
+              docxlength
+              // docxArray.words
+            );
+
+            resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
+
+            worker.terminate(); // Clean up worker
+            resolve();
+          } else if (event.data.type === "error") {
+            console.error("Worker reported error:", event.data.message);
+            reject(new Error(event.data.message));
+          }
+        } catch (error) {
+          console.error("Error in worker message handler:", error);
+          reject(error);
+        }
+      };
+
+      worker.onerror = function (error) {
+        console.error("Worker error event:", error);
+        reject(new Error(`Worker error: ${error.message}`));
+      };
+
+      // Read all PDF files as ArrayBuffers before sending to worker
+      Promise.all(
+        pdfFiles.map(async (file) => {
+          return {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+            arrayBuffer: await file.arrayBuffer(), // Convert to ArrayBuffer which can be transferred
+          };
+        })
+      )
+        .then((pdfBuffers) => {
+          // Extract the ArrayBuffers for transfer
+          const transferBuffers = pdfBuffers.map((pdf) => pdf.arrayBuffer); // Send the PDF file buffers and DOCX word array to the worker
+
+          worker.postMessage(
+            {
+              pdfBuffers: pdfBuffers,
+              docxArrayWord: docxArray.words,
+              action: "process",
+            },
+            transferBuffers
+          ); // Pass the ArrayBuffers as transfer objects
+        })
+        .catch((error) => {
+          reject(new Error(`Failed to read PDF files: ${error.message}`));
+        });
+    });
   } catch (error) {
-    throw new Error(
-      `Error extracting text from ${file.name}: ${error.message}`
-    );
+    throw new Error(`Text extraction failed: ${error.message}`);
   }
-}
-
-/**
- * Cleans and normalizes text for comparison
- * @param {string} text - Raw text to clean
- * @returns {string} Cleaned and normalized text
- */
-function cleanWord(text) {
-  return (
-    text
-      // Normalize Unicode characters
-      .normalize("NFD")
-      // Remove diacritics and non-alphabetic characters
-      .replace(/[\u0300-\u036f]|[^a-zA-Z0-9 ]/g, "")
-      // Replace multiple spaces with a single space
-      .replace(/\s+/g, " ")
-      // Remove leading/trailing whitespace
-      .trim()
-      // Convert to lowercase for case-insensitive comparison
-      .toLowerCase()
-  );
 }
 
 async function extractDocxText(file) {
@@ -442,13 +503,13 @@ function convertToObjects(mammothString) {
           // We're at a valid tag
           const tagEnd = str.indexOf(">", currentPosition);
           const tagContent = str.substring(currentPosition, tagEnd + 1);
-          const tagMatch = tagContent.match(/^<\/?([a-zA-Z0-9]+)/);
+          // const tagMatch = tagContent.match(/^<\/?([a-zA-Z0-9]+)/);
 
           const tagObject = {
             id: id++,
             type: "tag",
             content: tagContent,
-            tagName: tagMatch[1],
+            // tagName: tagMatch[1],
           };
 
           result.push(tagObject);
@@ -506,8 +567,8 @@ function convertToObjects(mammothString) {
 
     return result;
   }
-
   // Process each item in the input array
+
   const objects = processString(mammothString);
   result.push(...objects);
 
@@ -524,7 +585,7 @@ function separateWordsAndTags(inputArray) {
         id: item.id,
         content: item.content,
         modified: false,
-        color: "white",
+        // color: "white",
       });
     } else if (item.type === "tag") {
       tags.push({ id: item.id, content: item.content });
@@ -532,72 +593,6 @@ function separateWordsAndTags(inputArray) {
   });
 
   return { words, tags };
-}
-
-function cleanDocxTextWord(wordsArray) {
-  // Clean each item in the array
-  wordsArray.forEach((item) => {
-    if (item.content) {
-      const cleanedContent = cleanWord(item.content);
-      item.content = cleanedContent;
-    }
-    delete item.modified; // Remove the 'modified' property if it exists
-    delete item.color; // Remove the 'color' property if it exists
-  });
-
-  // Filter out items that have only special characters in 'content'
-  return wordsArray.filter((item) => {
-    const hasValidContent = /[a-zA-Z0-9]/.test(item.content);
-    return hasValidContent;
-  });
-}
-
-function createRollingWindows(data, windowSize = 11) {
-  let result = [];
-
-  for (let i = 0; i <= data.length - windowSize; i++) {
-    let windowSlice = data.slice(i, i + windowSize);
-
-    result.push({
-      ids: windowSlice.map((item) => item.id),
-      contents: windowSlice.map((item) => item.content),
-    });
-  }
-
-  return result;
-}
-
-function findMatchingIds(rollingWindows, inputContents, matchThreshold = 8) {
-  let matchingIds = [];
-  for (let input of inputContents) {
-    for (let window of rollingWindows) {
-      // Get the IDs of matching contents
-      let matchedItems = window.contents
-        .map((content, index) =>
-          input.includes(content) ? window.ids[index] : null
-        )
-        .filter((id) => id !== null); // Remove null values (non-matching items)
-
-      // If at least `matchThreshold` matches, add these IDs to the result
-      if (matchedItems.length >= matchThreshold) {
-        matchingIds.push(...matchedItems);
-      }
-    }
-  }
-
-  return [...new Set(matchingIds)]; // Remove duplicates if any
-}
-
-function slidingWindow(pdfText) {
-  let pdfTextArray = pdfText.split(" ");
-  let result = [];
-
-  for (let i = 0; i <= pdfTextArray.length - 10; i++) {
-    let window = pdfTextArray.slice(i, i + 10);
-    result.push(window);
-  }
-
-  return result;
 }
 
 function addSpanTagsAndModify(array, allResults) {
@@ -610,12 +605,11 @@ function addSpanTagsAndModify(array, allResults) {
     if (matchingResult) {
       // Wrap the content in a span tag with the color from the matching result
       const modifiedContent = `<span style="background-color: ${matchingResult.color.hex}">${item.content}</span>`;
-      console.log(modifiedContent);
       return {
         ...item,
         content: modifiedContent,
         modified: true,
-        color: matchingResult.color.name,
+        // color: matchingResult.color.name,``
       };
     }
     return item; // Return the item unchanged if no matching result or already modified
@@ -624,30 +618,22 @@ function addSpanTagsAndModify(array, allResults) {
 
 function combineWordsAndTagsInOrder(data) {
   // Combine words and tags into a single array
-  const combined = [...data.words, ...data.tags];
+  const combined = [...data.words, ...data.tags]; // Sort by id
 
-  // Sort by id
-  combined.sort((a, b) => a.id - b.id);
+  combined.sort((a, b) => a.id - b.id); // Initialize result array
 
-  // Initialize result array
   let result = [];
 
   for (let i = 0; i < combined.length; i++) {
     const currentItem = combined[i];
-    const nextItem = combined[i + 1];
+    const nextItem = combined[i + 1]; // Add the current item's content
 
-    // Add the current item's content
-    result.push(currentItem.content);
+    result.push(currentItem.content); // Add space if: // 1. This is not the last item // 3. Next item is also a word // 4. Current item's content is not a single character (like '/')
 
-    // Add space if:
-    // 1. This is not the last item
-    // 3. Next item is also a word
-    // 4. Current item's content is not a single character (like '/')
-    if (nextItem && currentItem.content.length > 1) {
+    if (nextItem) {
       result.push(" ");
     }
-  }
+  } // Join the final array
 
-  // Join the final array
   return result.join("");
 }
