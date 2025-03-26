@@ -2,7 +2,7 @@
  * This script handles the drag-and-drop functionality for PDF and DOCX files,
  * extracts text from the files, and compares the text for plagiarism detection.
  * @author [Prabodh Singh]
- * @version 1.0.4
+ * @version 1.0.5
  */
 
 // DOM element references
@@ -16,12 +16,15 @@ const previewPdf = document.getElementById("preview1");
 const previewDocx = document.getElementById("preview2");
 const processingDialog = document.getElementById("processing-dialog");
 const progressBar = document.getElementById("progress-bar");
+const currentfile = document.getElementById("currentfile");
 
 // Global state variables for storing dropped files - Consider using a single object to manage file state
-let uploadedFiles = {
-  pdfFiles: [],
+const uploadedFiles = {
+  pdfFiles: new Map(), // Using Map instead of Set for more control
   docxFile: null,
 };
+
+const getFileKey = (file) => `${file.name}-${file.size}-${file.lastModified}`;
 
 /**
  * Prevents default drag and drop behavior
@@ -135,11 +138,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const newPdfFiles = files.filter(
         (file) => file.type === "application/pdf"
       );
-      uploadedFiles.pdfFiles = [
-        ...(uploadedFiles.pdfFiles || []),
-        ...newPdfFiles,
-      ];
-      handleFilePreview(uploadedFiles.pdfFiles, previewPdf);
+      // Add new files to the Map
+      newPdfFiles.forEach((file) => {
+        uploadedFiles.pdfFiles.set(getFileKey(file), file);
+      });
+
+      // Convert Map values to Array for the preview function
+      handleFilePreview(
+        Array.from(uploadedFiles.pdfFiles.values()),
+        previewPdf
+      );
     } else if (uploadAreaId === "uploadAreaDocx") {
       uploadedFiles.docxFile =
         files.find((file) => file.name.endsWith(".docx")) || null; // Ensure null if no docx
@@ -156,11 +164,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // File input event handlers for manual file selection - Directly use handleFilePreview
   fileInputPdf.addEventListener("change", (event) => {
-    uploadedFiles.pdfFiles = [
-      ...(uploadedFiles.pdfFiles || []),
-      ...Array.from(event.target.files),
-    ]; // Update global state
-    handleFilePreview(uploadedFiles.pdfFiles, previewPdf);
+    // Add new files to the Map using a composite key
+    Array.from(event.target.files).forEach((file) => {
+      if (file.type === "application/pdf") {
+        uploadedFiles.pdfFiles.set(getFileKey(file), file);
+      }
+    });
+
+    handleFilePreview(Array.from(uploadedFiles.pdfFiles.values()), previewPdf);
   });
 
   fileInputDocx.addEventListener("change", (event) => {
@@ -186,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * @returns {Promise<void>}
  */
 async function handleExtractAndCompare() {
-  const pdfFiles = uploadedFiles.pdfFiles;
+  const pdfFiles = Array.from(uploadedFiles.pdfFiles.values());
   const docxFile = uploadedFiles.docxFile;
 
   try {
@@ -349,6 +360,7 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
             // Update progress
             filesProcessed++;
             progressBar.value = (filesProcessed / totalFiles) * 100;
+            currentfile.innerHTML = event.data.file + "  VS  " + docxFile.name;
           } else if (event.data.type === "result") {
             // Process final results
             const results = event.data.results; // Now that we have results, update DocxArray with highlighted text

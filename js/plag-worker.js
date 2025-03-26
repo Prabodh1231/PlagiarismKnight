@@ -66,6 +66,8 @@ onmessage = async function (event) {
         colorIndex = (colorIndex + 1) % colors.length;
 
         // Find matching IDs using the improved matching algorithm
+        // console.log(`Processing ${pdfData.name}...`);
+
         let commonIds = findMatchingIds(rollingWindows, databaseCleanedText, 8);
 
         allResults.push({ Ids: commonIds, file: pdfData.name, color: color });
@@ -227,36 +229,38 @@ function slidingWindow(pdfText) {
 
 function findMatchingIds(rollingWindows, inputContents, matchThreshold = 8) {
   let matchingIds = new Set(); // Use a Set to store unique IDs directly
-
+  // let totalNonmatchedCount = 0;
   for (const input of inputContents) {
     // Optimize input for faster lookups if it's an array and potentially large
-    const inputSet = Array.isArray(input) ? new Set(input) : null;
+    const inputSet = input instanceof Set ? input : new Set(input);
 
     for (const window of rollingWindows) {
       let matchedCount = 0;
+      let nonMatchedCount = 0;
       let currentWindowMatchedIds = [];
 
       for (let i = 0; i < window.contents.length; i++) {
         const content = window.contents[i];
         const id = window.ids[i];
 
-        // Use set for faster lookup if input was converted to set
-        const isMatch = inputSet
-          ? inputSet.has(content)
-          : input.includes(content);
-
-        if (isMatch) {
+        if (inputSet.has(content)) {
           matchedCount++;
-          currentWindowMatchedIds.push(id); // Temporarily store IDs for the current window
+          currentWindowMatchedIds.push(id);
+        } else {
+          nonMatchedCount++;
+
+          if (nonMatchedCount > window.contents.length - matchThreshold) {
+            // totalNonmatchedCount++;
+            break;
+          }
         }
       }
 
       if (matchedCount >= matchThreshold) {
-        // Add all matched IDs from the current window to the Set
         currentWindowMatchedIds.forEach((id) => matchingIds.add(id));
       }
     }
   }
-
+  // console.log("Total non-matched words:", totalNonmatchedCount);
   return Array.from(matchingIds); // Convert Set to Array for the final result
 }
