@@ -5,6 +5,8 @@
  * @version 1.0.5
  */
 
+import * as plagHelper from "./plagHelper.js"; // Importing helper functions for text processing
+
 // DOM element references
 const checkPlagiarismButton = document.getElementById("checkplagiarism");
 const resultOutput = document.getElementById("output");
@@ -287,6 +289,7 @@ function generateSummaryReportHTML(
   let pdfSummary = results.map((item) => {
     let pdfName = item.file;
     let pdfColor = item.color.hex;
+    let colorname = item.color.name;
     // let similarWord = [];
     // docxArrayWordId.forEach((wordObj) => {
     //   if (item.Ids.includes(wordObj.id)) {
@@ -302,6 +305,7 @@ function generateSummaryReportHTML(
       name: pdfName,
       // similarWords: similarWord,
       color: pdfColor,
+      colorname: colorname,
       percentage: pdfPercentage,
     };
   });
@@ -316,7 +320,7 @@ function generateSummaryReportHTML(
     data.forEach((row) => {
       tableHTML += `<tr>
             <td>${row.name}</td>
-            <td style="background-color:${row.color}">${row.color}</td>
+            <td style="background-color:${row.color}">${row.colorname}</td>
             <td>${row.percentage}%</td>
         </tr>`;
     });
@@ -336,95 +340,158 @@ function generateSummaryReportHTML(
  */
 async function extractTextAndCompare(pdfFiles, docxFile) {
   try {
-    // Show processing feedback
     resultOutput.innerHTML =
-      '<div class="processing">Processing files...</div>'; // Extract DOCX text
+      '<div class="processing">Processing files...</div>';
 
     let docxText = await extractDocxText(docxFile);
-    let docxArray = separateWordsAndTags(convertToObjects(docxText)); // Create a worker with the correct module type
+    let docxArray = separateWordsAndTags(convertToObjects(docxText));
 
-    const worker = new Worker(new URL("./plag-worker.js", import.meta.url), {
-      type: "module",
-    });
-    if (!worker) {
-      throw new Error("Failed to create worker");
-    } // Set up progress updates
+    // Clone the docx array to avoid mutating the original
+    let docxTextWord = JSON.parse(JSON.stringify(docxArray.words));
+    docxTextWord = plagHelper.cleanDocxTextWord(docxTextWord);
 
+    let docxlength = docxTextWord.length;
+
+    // Create rolling windows from the DOCX content for comparison
+    let rollingWindows = plagHelper.createRollingWindows(docxTextWord, 12);
+
+    const maxWorkers = 4;
+    const workers = [];
+    const results = [];
     let filesProcessed = 0;
     const totalFiles = pdfFiles.length;
+    let batchSize = 2; // Each worker will process 2 files at once
+    let fileIndex = 0;
 
-    return new Promise((resolve, reject) => {
-      worker.onmessage = function (event) {
-        try {
-          if (event.data.type === "progress") {
-            // Update progress
-            filesProcessed++;
-            progressBar.value = (filesProcessed / totalFiles) * 100;
-            currentfile.innerHTML = event.data.file + "  VS  " + docxFile.name;
-          } else if (event.data.type === "result") {
-            // Process final results
-            const results = event.data.results; // Now that we have results, update DocxArray with highlighted text
-            const docxlength = event.data.docxLength;
+    let colorIndex = 0; // Initialize color index
 
-            docxArray.words = addSpanTagsAndModify(docxArray.words, results);
-
-            let highlightedTextHTML = combineWordsAndTagsInOrder(docxArray);
-            const summaryReportHTML = generateSummaryReportHTML(
-              results,
-              pdfFiles,
-              docxFile,
-              docxlength
-              // docxArray.words
-            );
-
-            resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
-
-            worker.terminate(); // Clean up worker
-            resolve();
-          } else if (event.data.type === "error") {
-            console.error("Worker reported error:", event.data.message);
-            reject(new Error(event.data.message));
+    const processFilePair = async (pdfFilePair) => {
+      return new Promise(async (resolve, reject) => {
+        const worker = new Worker(
+          new URL("./plag-worker.js", import.meta.url),
+          {
+            type: "module",
           }
-        } catch (error) {
-          console.error("Error in worker message handler:", error);
-          reject(error);
-        }
-      };
+        );
 
-      worker.onerror = function (error) {
-        console.error("Worker error event:", error);
-        reject(new Error(`Worker error: ${error.message}`));
-      };
+        workers.push(worker);
 
-      // Read all PDF files as ArrayBuffers before sending to worker
-      Promise.all(
-        pdfFiles.map(async (file) => {
-          return {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-            arrayBuffer: await file.arrayBuffer(), // Convert to ArrayBuffer which can be transferred
-          };
-        })
-      )
-        .then((pdfBuffers) => {
-          // Extract the ArrayBuffers for transfer
-          const transferBuffers = pdfBuffers.map((pdf) => pdf.arrayBuffer); // Send the PDF file buffers and DOCX word array to the worker
+        worker.onmessage = (event) => {
+          try {
+            if (event.data.type === "progress") {
+              filesProcessed += event.data.filesCompleted || 1;
+              progressBar.value = (filesProcessed / totalFiles) * 100;
+              currentfile.innerHTML =
+                event.data.file + "  VS  " + docxFile.name;
+            } else if (event.data.type === "result") {
+              results.push(...event.data.results); // Spread the results as they may contain multiple file results
+              workers.splice(workers.indexOf(worker), 1);
+              worker.terminate();
+              resolve(event.data.results);
+            } else if (event.data.type === "error") {
+              console.error("Worker reported error:", event.data.message);
+              reject(new Error(event.data.message));
+              workers.splice(workers.indexOf(worker), 1);
+              worker.terminate();
+            }
+          } catch (error) {
+            console.error("Error in worker message handler:", error);
+            reject(error);
+            workers.splice(workers.indexOf(worker), 1);
+            worker.terminate();
+          }
+        };
+
+        worker.onerror = (error) => {
+          console.error("Worker error event:", error);
+          reject(new Error(`Worker error: ${error.message}`));
+          workers.splice(workers.indexOf(worker), 1);
+          worker.terminate();
+        };
+
+        try {
+          // Prepare multiple PDF files to send to the worker
+          const pdfBuffers = [];
+          const transferBuffers = [];
+
+          for (const pdfFile of pdfFilePair) {
+            if (!pdfFile) continue; // Skip if no file (might happen with odd number of files)
+
+            const pdfBuffer = await pdfFile.arrayBuffer();
+            pdfBuffers.push({
+              name: pdfFile.name,
+              type: pdfFile.type,
+              size: pdfFile.size,
+              lastModified: pdfFile.lastModified,
+              arrayBuffer: pdfBuffer,
+            });
+            transferBuffers.push(pdfBuffer);
+          }
+
+          const color1 = colors[colorIndex % colors.length];
+          const color2 = colors[(colorIndex + 1) % colors.length];
+          colorIndex += 2;
 
           worker.postMessage(
             {
               pdfBuffers: pdfBuffers,
-              docxArrayWord: docxArray.words,
+              rollingWindows: rollingWindows,
+              colors: [color1, color2],
               action: "process",
             },
             transferBuffers
-          ); // Pass the ArrayBuffers as transfer objects
-        })
-        .catch((error) => {
-          reject(new Error(`Failed to read PDF files: ${error.message}`));
-        });
-    });
+          );
+        } catch (error) {
+          reject(new Error(`Failed to read PDF file(s): ${error.message}`));
+          workers.splice(workers.indexOf(worker), 1);
+          worker.terminate();
+        }
+      });
+    };
+
+    const processBatch = async () => {
+      // Create pairs of PDF files
+      const pairs = [];
+      for (
+        let i = fileIndex;
+        i < Math.min(fileIndex + maxWorkers * batchSize, totalFiles);
+        i += batchSize
+      ) {
+        const pair = pdfFiles.slice(i, Math.min(i + batchSize, totalFiles));
+        pairs.push(pair);
+      }
+
+      const promises = pairs.map((pair) => processFilePair(pair));
+      return Promise.all(promises);
+    };
+
+    const processAllFiles = async () => {
+      while (fileIndex < totalFiles) {
+        await processBatch();
+        fileIndex += maxWorkers * batchSize;
+
+        // Limit the number of active workers
+        while (workers.length >= maxWorkers) {
+          await new Promise((resolve) => setTimeout(resolve, 100)); // Wait briefly
+        }
+      }
+    };
+
+    await processAllFiles();
+
+    const allResults = results.flat();
+
+    docxArray.words = addSpanTagsAndModify(docxArray.words, allResults);
+
+    let highlightedTextHTML = combineWordsAndTagsInOrder(docxArray);
+    const summaryReportHTML = generateSummaryReportHTML(
+      allResults,
+      pdfFiles,
+      docxFile,
+      docxlength
+    );
+
+    resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
   } catch (error) {
     throw new Error(`Text extraction failed: ${error.message}`);
   }
@@ -649,3 +716,51 @@ function combineWordsAndTagsInOrder(data) {
 
   return result.join("");
 }
+
+const colors = [
+  { name: "Seafoam", hex: "#71EEB8AA" },
+  { name: "Powder Blue", hex: "#B0E0E6AA" },
+  { name: "Lavender", hex: "#E6E6FAAA" },
+  { name: "Tangerine", hex: "#F28500AA" },
+  { name: "Mint Green", hex: "#98FB98AA" },
+  { name: "Baby Blue", hex: "#89CFFAAA" },
+  { name: "Light Pink", hex: "#FFB6C1AA" },
+  { name: "Light Teal", hex: "#8FDBDCAA" },
+  { name: "Azure", hex: "#F0FFFFAA" },
+  { name: "Orchid", hex: "#DA70D6AA" },
+  { name: "Champagne", hex: "#F7E7CEAA" },
+  { name: "Coral", hex: "#FF7F50AA" },
+  { name: "Pale Yellow", hex: "#FFFF99AA" },
+  { name: "Neon Yellow", hex: "#DFFF00AA" },
+  { name: "Sky Blue", hex: "#87CEEBAA" },
+  { name: "Ecru", hex: "#CCC5A3AA" },
+  { name: "Light Green", hex: "#90EE90AA" },
+  { name: "Peach", hex: "#FFDAB9AA" },
+  { name: "Light Lime", hex: "#CCFF00AA" },
+  { name: "Pale Teal", hex: "#80CBC4AA" },
+  { name: "Spring Green", hex: "#00FF7FAA" },
+  { name: "Magenta", hex: "#FF00FFAA" },
+  { name: "Light Orange", hex: "#FFA500AA" },
+  { name: "Mauve", hex: "#E0B0FFAA" },
+  { name: "Fuchsia", hex: "#FF77FFAA" },
+  { name: "Thistle", hex: "#D8BFD8AA" },
+  { name: "Salmon", hex: "#FFA07AAA" },
+  { name: "Chartreuse", hex: "#DFFF4FAA" },
+  { name: "Light Red", hex: "#FFCCCCAA" },
+  { name: "Canary", hex: "#FFEF00AA" },
+  { name: "Yellow", hex: "#FFFF00AA" },
+  { name: "Lime", hex: "#BFFF00AA" },
+  { name: "Periwinkle", hex: "#CCCCFFAA" },
+  { name: "Pale Green", hex: "#98FB98AA" },
+  { name: "Bubblegum", hex: "#FFC1CCAA" },
+  { name: "Ivory", hex: "#FFFFF0AA" },
+  { name: "Violet", hex: "#EE82EEAA" },
+  { name: "Apricot", hex: "#FBCEB1AA" },
+  { name: "Melon", hex: "#FDBCB4AA" },
+  { name: "Turquoise", hex: "#40E0D0AA" },
+  { name: "Rose", hex: "#FF007FAA" },
+  { name: "Pale Yellow", hex: "#FFFACDAA" },
+  { name: "Light Purple", hex: "#D8BFD8AA" },
+  { name: "Amethyst", hex: "#9966CCAA" },
+  { name: "Cornflower Blue", hex: "#6495EDAA" },
+];

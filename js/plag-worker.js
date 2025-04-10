@@ -4,49 +4,14 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.mjs";
 onmessage = async function (event) {
   try {
     // **Outer try-catch to wrap the entire onmessage handler**
-    const { pdfBuffers, docxArrayWord, action } = event.data;
+    const { pdfBuffers, rollingWindows, colors, action } = event.data;
 
     if (action !== "process") {
       postMessage({ type: "error", message: "Invalid action" });
       return;
     }
 
-    // Clone the docx array to avoid mutating the original
-    let docxTextWord = JSON.parse(JSON.stringify(docxArrayWord));
-    docxTextWord = cleanDocxTextWord(docxTextWord);
-
-    let docxlength = docxTextWord.length;
-
-    // Create rolling windows from the DOCX content for comparison
-    let rollingWindows = createRollingWindows(docxTextWord, 12);
-
     let colorIndex = 0;
-    const colors = [
-      { name: "Classic Yellow", hex: "#FFEB3B" },
-      { name: "Soft Yellow", hex: "#FFF59D" },
-      { name: "Pale Yellow", hex: "#FFFDE7" },
-      { name: "Mint Green", hex: "#E8F5E9" },
-      { name: "Light Green", hex: "#C8E6C9" },
-      { name: "Seafoam Green", hex: "#B2DFDB" },
-      { name: "Sky Blue", hex: "#E3F2FD" },
-      { name: "Baby Blue", hex: "#BBDEFB" },
-      { name: "Powder Blue", hex: "#B3E5FC" },
-      { name: "Peach", hex: "#FFE0B2" },
-      { name: "Apricot", hex: "#FFCCBC" },
-      { name: "Coral", hex: "#FFCDD2" },
-      { name: "Rose", hex: "#F8BBD0" },
-      { name: "Light Pink", hex: "#F5E6E8" },
-      { name: "Blush Pink", hex: "#FCE4EC" },
-      { name: "Lavender", hex: "#F3E5F5" },
-      { name: "Light Purple", hex: "#EDE7F6" },
-      { name: "Periwinkle", hex: "#E8EAF6" },
-      { name: "Cream", hex: "#FFF8E1" },
-      { name: "Ivory", hex: "#FAFAFA" },
-      { name: "Mint Cream", hex: "#E0F2F1" },
-      { name: "Azure", hex: "#E1F5FE" },
-      { name: "Honeydew", hex: "#F1F8E9" },
-      { name: "Linen", hex: "#FFF3E0" },
-    ];
 
     let allResults = [];
 
@@ -63,7 +28,7 @@ onmessage = async function (event) {
         databaseCleanedText = slidingWindow(databaseCleanedText);
 
         let color = colors[colorIndex];
-        colorIndex = (colorIndex + 1) % colors.length;
+        colorIndex++;
 
         // Find matching IDs using the improved matching algorithm
         // console.log(`Processing ${pdfData.name}...`);
@@ -87,7 +52,6 @@ onmessage = async function (event) {
     // Send the final results back to the main thread
     postMessage({
       type: "result",
-      docxLength: docxlength,
       results: allResults,
     });
   } catch (error) {
@@ -102,51 +66,6 @@ onmessage = async function (event) {
 };
 
 // ... (rest of plag-worker.js code remains the same) ...
-
-function cleanDocxTextWord(wordsArray) {
-  // Clean each item in the array
-  wordsArray.forEach((item) => {
-    if (item.content) {
-      const cleanedContent = cleanWord(item.content);
-      item.content = cleanedContent;
-    }
-    delete item.modified; // Remove the 'modified' property if it exists
-    // delete item.color; // Remove the 'color' property if it exists
-  });
-
-  // Filter out items that have only special characters in 'content'
-  return wordsArray.filter((item) => {
-    const hasValidContent = /[a-zA-Z0-9]/.test(item.content);
-    return hasValidContent;
-  });
-}
-
-function createRollingWindows(data, windowSize = 12) {
-  let result = [];
-
-  for (let i = 0; i <= data.length - windowSize; i++) {
-    let windowSlice = data.slice(i, i + windowSize);
-
-    // Track unique contents and their corresponding IDs
-    let uniqueContents = new Set();
-    let uniqueIds = [];
-
-    windowSlice.forEach((item) => {
-      // Only add the ID if we haven't seen this content before
-      if (!uniqueContents.has(item.content)) {
-        uniqueContents.add(item.content);
-        uniqueIds.push(item.id);
-      }
-    });
-
-    result.push({
-      ids: uniqueIds,
-      contents: Array.from(uniqueContents),
-    });
-  }
-
-  return result;
-}
 
 /**
  * Cleans and normalizes text for comparison

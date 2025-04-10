@@ -6,8 +6,8 @@
   --primary-color-darker: #c2185b;
   --secondary-color: #6c757d;
   --bg-light: #f8f9fa;
-  --text-dark: #343a40;
-  --text-muted: #6c757d;
+  --text-dark: #000000;
+  --text-muted: #343a40;
   --border-color: #dee2e6;
   --accent-color: #9c27b0;
   --accent-color-darker: #7b1fa2;
@@ -296,8 +296,44 @@ header {
 }
 
 /* ============================================================
+     Hero LAYOUT
+     ============================================================ */
+
+.hero {
+  /* display: flex; */
+  background-color: white;
+  max-width: 1180px;
+  margin: 25px auto;
+  padding: 2.5rem;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.hero-content {
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+/* ============================================================
      MAIN LAYOUT
      ============================================================ */
+
 .container {
   display: flex;
   max-width: 1200px;
@@ -316,10 +352,11 @@ header {
 }
 
 .sidebar h2 {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--primary-color);
   margin-top: 0;
   margin-bottom: 15px;
-  color: var(--text-dark);
   border-bottom: 2px solid var(--primary-color);
   padding-bottom: 8px;
 }
@@ -431,7 +468,7 @@ header {
 }
 
 /* Check Button */
-#checkplagiarism {
+button {
   background-color: var(--accent-color);
   color: white;
   border: none;
@@ -445,8 +482,8 @@ header {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-#checkplagiarism:hover,
-#checkplagiarism:focus {
+button:hover,
+button:focus {
   background-color: var(--accent-color-darker);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -674,6 +711,10 @@ img {
     padding: 0 10px;
   }
 
+  .hero {
+    margin: 10px;
+  }
+
   .sidebar {
     width: 100%;
     margin-right: 0;
@@ -729,4 +770,98 @@ img {
   .processing-dialog progress {
     height: 10px;
   }
+}
+
+.step-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.steps {
+  counter-reset: step-counter;
+  margin-top: 50px;
+}
+
+.step {
+  text-align: justify;
+  display: flex;
+  margin-bottom: 1.5rem;
+  position: center;
+}
+
+.step-number {
+  counter-increment: step-counter;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 1rem;
+}
+
+.step-number::before {
+  content: counter(step-counter);
+}
+
+.features {
+  background-color: white;
+  max-width: 1180px;
+  margin: 25px auto;
+  padding: 2.5rem;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.feature {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.feature-card h3 {
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.feature-card:hover {
+  background-color: rgb(255, 243, 252);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card h3 {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.feature-icon {
+  background-color: var(--light-gray);
+  color: var(--primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
 }

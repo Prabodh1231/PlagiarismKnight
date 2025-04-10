@@ -18,7 +18,7 @@
           <div class="nav">
             <ul class="nav-list">
               <li><a href="#" class="nav-link active">Home</a></li>
-              <li><a href="#" class="nav-link">About</a></li>
+              <li><a href="/about.html" class="nav-link">About</a></li>
               <li><a href="#" class="nav-link">Services</a></li>
               <li><a href="#" class="nav-link">Contact</a></li>
             </ul>
@@ -55,59 +55,69 @@
 
     <div class="overlay"></div>
 
-    <div class="container">
-      <aside class="sidebar">
-        <h2>Instructions</h2>
-        <p>1. Upload a PDF file to create your database.</p>
-        <p>2. Upload a DOCX file to check for plagiarism.</p>
-        <p>3. Click "Check Plagiarism" to analyze the files.</p>
-      </aside>
-
-      <section class="main-content">
-        <div class="upload-area" id="uploadAreaPdf">
-          <p>
-            Create Your Database <br />
-            Drag & Drop PDF File Here
+    <main>
+      <section class="hero">
+        <div class="hero-content">
+          <h1 class="hero-title">Your Academic Integrity Companion</h1>
+          <p class="hero-subtitle">
+            A free, privacy-focused plagiarism detection tool that runs entirely
+            on your device. No data leaves your computer, no accounts needed.
           </p>
-          <button onclick="document.getElementById('fileInput1').click()">
-            Select File
-          </button>
-          <input
-            type="file"
-            id="fileInput1"
-            class="file-input"
-            accept=".pdf"
-            multiple
-            onchange="handleFiles(this.files, 'preview1')"
-          />
         </div>
-
-        <div class="upload-area" id="uploadAreaDocx">
-          <p>
-            Select Your Work for Plagiarism <br />
-            Drag & Drop DOCX File Here
-          </p>
-          <button onclick="document.getElementById('fileInput2').click()">
-            Select File
-          </button>
-          <input
-            type="file"
-            id="fileInput2"
-            class="file-input"
-            accept=".docx"
-          />
-        </div>
-
-        <div class="preview_area">
-          <div id="preview1"></div>
-          <div id="preview2"></div>
-        </div>
-
-        <button id="checkplagiarism">Check Plagiarism</button>
-
-        <div id="output"></div>
       </section>
-    </div>
+      <section class="container">
+        <aside class="sidebar">
+          <h2>Instructions</h2>
+          <p>1. Upload a PDF file to create your database.</p>
+          <p>2. Upload a DOCX file to check for plagiarism.</p>
+          <p>3. Click "Check Plagiarism" to analyze the files.</p>
+        </aside>
+
+        <section class="main-content">
+          <div class="upload-area" id="uploadAreaPdf">
+            <p>
+              Create Your Database <br />
+              Drag & Drop PDF File Here
+            </p>
+            <button onclick="document.getElementById('fileInput1').click()">
+              Select File
+            </button>
+            <input
+              type="file"
+              id="fileInput1"
+              class="file-input"
+              accept=".pdf"
+              multiple
+            />
+          </div>
+
+          <div class="upload-area" id="uploadAreaDocx">
+            <p>
+              Select Your Work for Plagiarism <br />
+              Drag & Drop DOCX File Here
+            </p>
+            <button onclick="document.getElementById('fileInput2').click()">
+              Select File
+            </button>
+            <input
+              type="file"
+              id="fileInput2"
+              class="file-input"
+              accept=".docx"
+            />
+          </div>
+
+          <div class="preview_area">
+            <div id="preview1"></div>
+            <div id="preview2"></div>
+          </div>
+
+          <button id="checkplagiarism">Check Plagiarism</button>
+
+          <div id="output"></div>
+        </section>
+      </section>
+    </main>
 
     <dialog id="processing-dialog" class="processing-dialog">
       <div class="loading-content">
