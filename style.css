@@ -10,7 +10,7 @@
   --text-muted: #343a40;
   --border-color: #dee2e6;
   --accent-color: #9c27b0;
-  --accent-color-darker: #7b1fa2;
+  --accent-color-darker: #6a0dad;
   --header-footer-bg: #f8f9fa;
   --header-footer-text: var(--text-dark);
   --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -167,6 +167,7 @@ header {
 
 .menu-toggle {
   display: none;
+  margin-right: 0%;
   background: transparent;
   border: none;
   color: var(--text-dark);
@@ -181,7 +182,7 @@ header {
   position: fixed;
   top: 0;
   right: -100%;
-  width: 80%;
+  width: 70%;
   max-width: 400px;
   height: 100vh;
   background-color: var(--bg-light);
@@ -775,7 +776,7 @@ img {
 .step-title {
   font-size: 1.5rem;
   font-weight: 500;
-  color: var(--primary-color);
+  color: var(--accent-color-darker);
   margin-bottom: 1rem;
 }
 
@@ -796,7 +797,7 @@ img {
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  background-color: var(--primary-color);
+  background-color: var(--accent-color-darker);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -815,7 +816,6 @@ img {
   max-width: 1180px;
   margin: 25px auto;
   padding: 2.5rem;
-  text-align: center;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
@@ -830,7 +830,7 @@ img {
   background-color: white;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
 }
@@ -840,18 +840,15 @@ img {
   font-size: 1.4rem;
   font-weight: 500;
   margin-bottom: 1rem;
+  color: var(--accent-color-darker);
+  display: flex;
+  align-items: center;
 }
 
 .feature-card:hover {
   background-color: rgb(255, 243, 252);
   transform: translateY(-5px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-.feature-card h3 {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
 }
 
 .feature-icon {
@@ -864,4 +861,35 @@ img {
   align-items: center;
   justify-content: center;
   margin-right: 0.75rem;
+}
+
+.faq-item {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--light-gray);
+  padding-bottom: 1rem;
+}
+
+.faq-question {
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  color: var(--accent-color-darker);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.faq-answer.open {
+  max-height: 500px;
 }

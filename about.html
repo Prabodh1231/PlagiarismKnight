@@ -68,7 +68,7 @@
         </div>
       </section>
 
-      <section class="hero">
+      <section class="features">
         <h2 class="hero-title">How It Works</h2>
         <p>
           PlagCheck operates entirely on your device - no internet connection
@@ -125,7 +125,7 @@
       </section>
 
       <section class="features">
-        <h2>Why Choose PlagCheck?</h2>
+        <h2 class="hero-title">Why Choose PlagCheck?</h2>
 
         <div class="feature">
           <div class="feature-card">
@@ -163,12 +163,13 @@
 
           <div class="feature-card">
             <h3>
-              <div class="feature-icon">💯</div>
-              Ad-Supported
+              <div class="feature-icon">📲</div>
+              Installable App
             </h3>
             <p>
-              Access professional-grade plagiarism checking without any
-              subscription fees - supported by non-intrusive advertisements.
+              Install PlagCheck on your device with just a click. Access it from
+              your home screen or app drawer like any native application, with
+              no app store required.
             </p>
           </div>
 
@@ -195,10 +196,137 @@
           </div>
         </div>
       </section>
+
+      <section class="features">
+        <h2 class="hero-title">About Our Advertisements</h2>
+        <p>
+          PlagCheck is completely free to use, with no hidden fees or premium
+          tiers. To sustain this service and continue development, we rely on
+          non-intrusive advertisements displayed throughout the website.
+        </p>
+
+        <h3 class="faq-question">Our Ad Policy:</h3>
+        <ul style="margin-left: 2rem; margin-bottom: 1rem">
+          <li>
+            Your documents and data remain 100% private - ad providers never
+            receive your files or content
+          </li>
+          <li>Ads are clearly labeled and separated from content</li>
+          <li>
+            No pop-ups or intrusive ad formats that disrupt your experience
+          </li>
+          <li>No ads are shown in the actual plagiarism checking interface</li>
+        </ul>
+
+        <p>
+          By viewing these advertisements, you help support free access to
+          plagiarism checking for all students, regardless of their financial
+          situation or institutional resources.
+        </p>
+      </section>
+
+      <section class="features">
+        <h2 class="hero-title">Frequently Asked Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            How accurate is PlagCheck compared to university tools?
+            <span class="toggle">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>
+              While PlagCheck provides a solid foundation for plagiarism
+              detection, it's important to note that it doesn't have access to
+              the extensive proprietary databases that university-provided tools
+              often use. PlagCheck works by comparing your document against the
+              reference materials you provide, making it extremely effective for
+              checking against course materials but less comprehensive for
+              detecting similarities with published works not included in your
+              references.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            Is my data really safe and private even with advertisements?
+            <span class="toggle">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>
+              Absolutely. PlagCheck operates entirely within your browser. There
+              is no backend server processing your documents, no data storage,
+              and no transmission of your content over the internet. Your
+              documents never leave your device, ensuring complete privacy and
+              security. The advertisements are loaded separately and have no
+              access to your uploaded files or their content.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            What file formats does PlagCheck support?
+            <span class="toggle">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>
+              PlagCheck supports most common document formats including .docx,
+              .pdf, .txt, .rtf, .odt, and more. The application extracts text
+              content from these files for analysis.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            Is there an ad-free version available?
+            <span class="toggle">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>
+              Currently, we only offer the ad-supported version of PlagCheck.
+              We've made this decision to keep the service completely free for
+              all users while maintaining its privacy-first approach. We
+              carefully select our ad partners and ensure the advertisements are
+              non-intrusive and clearly separated from the plagiarism checking
+              functionality.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            Can I use PlagCheck for my professional work?
+            <span class="toggle">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>
+              While primarily designed for students, PlagCheck can be used by
+              anyone looking to verify the originality of their written content.
+              However, for professional publications or critical documents, we
+              recommend using it as a preliminary check before employing more
+              comprehensive commercial solutions.
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer>
       <p>&copy; 2025 Plagiarism Checker. All rights reserved.</p>
+      <p>Your work stays yours. No data collection. No tracking.</p>
     </footer>
+    <script>
+      const faqQuestions = document.querySelectorAll(".faq-question");
+      faqQuestions.forEach((question) => {
+        question.addEventListener("click", () => {
+          const answer = question.nextElementSibling;
+          const toggle = question.querySelector(".toggle");
+          answer.classList.toggle("open");
+          toggle.textContent = answer.classList.contains("open") ? "-" : "+";
+        });
+      });
+    </script>
   </body>
 </html>

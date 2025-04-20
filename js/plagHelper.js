@@ -16,31 +16,40 @@ function cleanDocxTextWord(wordsArray) {
   });
 }
 
+/**
+ * Creates an array of rolling windows from the input data, where each window
+ * contains unique content and their corresponding IDs.
+ *
+ * @param {Array<{content: string, id: number}>} data - An array of data items, where each item
+ * has a 'content' (string) and an 'id' (number) property.
+ * @param {number} [windowSize=12] - The size of each rolling window.
+ * @returns {Array<{contents: string[], ids: number[]}>} An array of rolling windows. Each window is an object
+ * with 'contents' (an array of unique content strings) and
+ * 'ids' (an array of the corresponding unique IDs).
+ */
 function createRollingWindows(data, windowSize = 12) {
-  let result = [];
+  const rollingWindows = [];
 
   for (let i = 0; i <= data.length - windowSize; i++) {
-    let windowSlice = data.slice(i, i + windowSize);
+    const windowData = data.slice(i, i + windowSize);
 
-    // Track unique contents and their corresponding IDs
-    let uniqueContents = new Set();
-    let uniqueIds = [];
+    const uniqueContents = new Set();
+    const uniqueIds = [];
 
-    windowSlice.forEach((item) => {
-      // Only add the ID if we haven't seen this content before
+    windowData.forEach((item) => {
       if (!uniqueContents.has(item.content)) {
         uniqueContents.add(item.content);
         uniqueIds.push(item.id);
       }
     });
 
-    result.push({
+    rollingWindows.push({
       ids: uniqueIds,
       contents: Array.from(uniqueContents),
     });
   }
 
-  return result;
+  return rollingWindows;
 }
 
 /**

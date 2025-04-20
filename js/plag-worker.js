@@ -146,40 +146,48 @@ function slidingWindow(pdfText) {
   return result;
 }
 
-function findMatchingIds(rollingWindows, inputContents, matchThreshold = 8) {
-  let matchingIds = new Set(); // Use a Set to store unique IDs directly
-  // let totalNonmatchedCount = 0;
-  for (const input of inputContents) {
-    // Optimize input for faster lookups if it's an array and potentially large
-    const inputSet = input instanceof Set ? input : new Set(input);
+/**
+ * Finds document IDs that match query terms based on a minimum similarity threshold.
+ *
+ * @param {Array<Object>} documentWindows - An array of document windows, each containing content terms and IDs
+ * Each window should have {contents: Array<string>, ids: Array<string>}
+ * @param {Array<Array<string>|Set<string>>} queryTerms - Array of query term collections
+ * @param {number} minMatchThreshold - Minimum number of matching terms required (default: 8)
+ * @returns {Array<string>} Array of unique document IDs that meet the matching criteria
+ */
+function findMatchingIds(documentWindows, queryTerms, minMatchThreshold = 8) {
+  const matchingDocumentIds = new Set();
+  for (const currentQuerySet of queryTerms) {
+    const termSet = new Set(currentQuerySet);
 
-    for (const window of rollingWindows) {
-      let matchedCount = 0;
-      let nonMatchedCount = 0;
-      let currentWindowMatchedIds = [];
+    for (const window of documentWindows) {
+      let matchedTermCount = 0;
+      let nonMatchedTermCount = 0;
+      let currentWindowMatchingIds = [];
 
       for (let i = 0; i < window.contents.length; i++) {
-        const content = window.contents[i];
-        const id = window.ids[i];
+        const term = window.contents[i];
+        const documentId = window.ids[i];
 
-        if (inputSet.has(content)) {
-          matchedCount++;
-          currentWindowMatchedIds.push(id);
+        if (termSet.has(term)) {
+          matchedTermCount++;
+          currentWindowMatchingIds.push(documentId);
         } else {
-          nonMatchedCount++;
+          nonMatchedTermCount++;
 
-          if (nonMatchedCount > window.contents.length - matchThreshold) {
-            // totalNonmatchedCount++;
+          if (
+            nonMatchedTermCount >
+            window.contents.length - minMatchThreshold
+          ) {
             break;
           }
         }
       }
 
-      if (matchedCount >= matchThreshold) {
-        currentWindowMatchedIds.forEach((id) => matchingIds.add(id));
+      if (matchedTermCount >= minMatchThreshold) {
+        currentWindowMatchingIds.forEach((id) => matchingDocumentIds.add(id));
       }
     }
   }
-  // console.log("Total non-matched words:", totalNonmatchedCount);
-  return Array.from(matchingIds); // Convert Set to Array for the final result
+  return Array.from(matchingDocumentIds); // Convert Set to Array for the final result
 }
