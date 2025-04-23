@@ -7,17 +7,17 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header class="header">
+    <header class="header" role="banner">
       <div class="header-container">
-        <nav class="navbar">
-          <a href="#" class="brand">
+        <nav class="navbar" role="navigation">
+          <a href="./index.html" class="brand">
             <div class="logo">P</div>
             <h1 class="brand-name">Plagiarism<span>Checker</span></h1>
           </a>
 
           <div class="nav">
             <ul class="nav-list">
-              <li><a href="#" class="nav-link active">Home</a></li>
+              <li><a href="/index.html" class="nav-link active">Home</a></li>
               <li><a href="/about.html" class="nav-link">About</a></li>
               <li><a href="#" class="nav-link">Services</a></li>
               <li><a href="#" class="nav-link">Contact</a></li>
@@ -39,10 +39,10 @@
     <div class="mobile-menu">
       <ul class="mobile-nav-list">
         <li class="mobile-nav-item">
-          <a href="#" class="mobile-nav-link active">Home</a>
+          <a href="./index.html" class="mobile-nav-link active">Home</a>
         </li>
         <li class="mobile-nav-item">
-          <a href="#" class="mobile-nav-link">About</a>
+          <a href="./about.html" class="mobile-nav-link">About</a>
         </li>
         <li class="mobile-nav-item">
           <a href="#" class="mobile-nav-link">Services</a>
@@ -55,10 +55,10 @@
 
     <div class="overlay"></div>
 
-    <main>
+    <main role="main">
       <section class="hero">
         <div class="hero-content">
-          <h1 class="hero-title">Your Academic Integrity Companion</h1>
+          <h2 class="hero-title">Your Academic Integrity Companion</h2>
           <p class="hero-subtitle">
             A free, privacy-focused plagiarism detection tool that runs entirely
             on your device. No data leaves your computer, no accounts needed.
@@ -79,9 +79,15 @@
               Create Your Database <br />
               Drag & Drop PDF File Here
             </p>
-            <button onclick="document.getElementById('fileInput1').click()">
-              Select File
-            </button>
+            <label for="fileInput1" aria-describedby="pdf-file-description">
+              <button
+                onclick="document.getElementById('fileInput1').click()"
+                type="button"
+                aria-label="Select PDF file to create database"
+              >
+                Select File
+              </button>
+            </label>
             <input
               type="file"
               id="fileInput1"
@@ -89,16 +95,24 @@
               accept=".pdf"
               multiple
             />
+            <div id="pdf-file-description">
+              Select one or more PDF files to create the database.
+            </div>
           </div>
 
           <div class="upload-area" id="uploadAreaDocx">
             <p>
-              Select Your Work for Plagiarism <br />
+              <strong> Select Your Work for Plagiarism</strong> <br />
               Drag & Drop DOCX File Here
             </p>
-            <button onclick="document.getElementById('fileInput2').click()">
-              Select File
-            </button>
+            <label for="fileInput2">
+              <button
+                onclick="document.getElementById('fileInput2').click()"
+                type="button"
+              >
+                Select File
+              </button>
+            </label>
             <input
               type="file"
               id="fileInput2"
@@ -107,15 +121,16 @@
             />
           </div>
 
-          <div class="preview_area">
-            <div id="preview1"></div>
-            <div id="preview2"></div>
+          <div class="preview_area" aria-live="polite">
+            <div id="preview1" aria-label="PDF preview"></div>
+            <div id="preview2" aria-label="DOCX preview"></div>
           </div>
 
           <button id="checkplagiarism">Check Plagiarism</button>
-
-          <div id="output"></div>
         </section>
+      </section>
+      <section class="output_container">
+        <div id="output"></div>
       </section>
     </main>
 
@@ -133,51 +148,7 @@
       <p>Your work stays yours. No data collection. No tracking.</p>
     </footer>
 
-    <script>
-      const html = document.documentElement;
-      const header = document.querySelector(".header");
-      const menuToggle = document.querySelector(".menu-toggle");
-      const hamburger = document.querySelector(".hamburger");
-      const mobileMenu = document.querySelector(".mobile-menu");
-      const overlay = document.querySelector(".overlay");
-
-      window.addEventListener("scroll", () => {
-        if (window.scrollY > 10) {
-          header.classList.add("header-scrolled");
-        } else {
-          header.classList.remove("header-scrolled");
-        }
-      });
-
-      // Mobile menu toggle
-      menuToggle.addEventListener("click", toggleMenu);
-      overlay.addEventListener("click", closeMenu);
-
-      function toggleMenu() {
-        hamburger.classList.toggle("open");
-        mobileMenu.classList.toggle("active");
-        overlay.classList.toggle("active");
-        document.body.style.overflow = mobileMenu.classList.contains("active")
-          ? "hidden"
-          : "";
-      }
-
-      function closeMenu() {
-        hamburger.classList.remove("open");
-        mobileMenu.classList.remove("active");
-        overlay.classList.remove("active");
-        document.body.style.overflow = "";
-      }
-
-      window.addEventListener("resize", () => {
-        if (
-          window.innerWidth > 992 &&
-          mobileMenu.classList.contains("active")
-        ) {
-          closeMenu();
-        }
-      });
-    </script>
+    <script src="js/script.js"></script>
     <script src="js/mammoth.browser.js"></script>
     <script type="module" src="js/plag.js"></script>
   </body>

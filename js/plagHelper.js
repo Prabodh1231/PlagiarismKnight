@@ -73,4 +73,260 @@ function cleanWord(text) {
   );
 }
 
-export { cleanDocxTextWord, createRollingWindows, cleanWord };
+const stopWords = [
+  "a",
+  "about",
+  "above",
+  "after",
+  "again",
+  "against",
+  "ain",
+  "all",
+  "am",
+  "an",
+  "and",
+  "any",
+  "are",
+  "aren",
+  "aren’t",
+  "as",
+  "at",
+  "be",
+  "because",
+  "been",
+  "before",
+  "being",
+  "below",
+  "between",
+  "both",
+  "but",
+  "by",
+  "can",
+  "couldn",
+  "couldn’t",
+  "d",
+  "did",
+  "didn",
+  "didn’t",
+  "do",
+  "does",
+  "doesn",
+  "doesn’t",
+  "doing",
+  "don",
+  "don’t",
+  "down",
+  "during",
+  "each",
+  "few",
+  "for",
+  "from",
+  "further",
+  "had",
+  "hadn",
+  "hadn’t",
+  "has",
+  "hasn",
+  "hasn’t",
+  "have",
+  "haven",
+  "haven’t",
+  "having",
+  "he",
+  "her",
+  "here",
+  "hers",
+  "herself",
+  "him",
+  "himself",
+  "his",
+  "how",
+  "i",
+  "if",
+  "in",
+  "into",
+  "is",
+  "isn",
+  "isn’t",
+  "it",
+  "it’s",
+  "its",
+  "itself",
+  "just",
+  "ll",
+  "m",
+  "ma",
+  "me",
+  "mightn",
+  "mightn’t",
+  "more",
+  "most",
+  "mustn",
+  "mustn’t",
+  "my",
+  "myself",
+  "needn",
+  "needn’t",
+  "no",
+  "nor",
+  "not",
+  "now",
+  "o",
+  "of",
+  "off",
+  "on",
+  "once",
+  "only",
+  "or",
+  "other",
+  "our",
+  "ours",
+  "ourselves",
+  "out",
+  "over",
+  "own",
+  "re",
+  "s",
+  "same",
+  "shan",
+  "shan’t",
+  "she",
+  "she’s",
+  "should",
+  "should’ve",
+  "shouldn",
+  "shouldn’t",
+  "so",
+  "some",
+  "such",
+  "t",
+  "than",
+  "that",
+  "that’ll",
+  "the",
+  "their",
+  "theirs",
+  "them",
+  "themselves",
+  "there",
+  "these",
+  "they",
+  "this",
+  "those",
+  "through",
+  "to",
+  "too",
+  "under",
+  "until",
+  "up",
+  "ve",
+  "very",
+  "was",
+  "wasn",
+  "wasn’t",
+  "we",
+  "were",
+  "weren",
+  "weren’t",
+  "what",
+  "when",
+  "where",
+  "which",
+  "while",
+  "who",
+  "whom",
+  "why",
+  "will",
+  "with",
+  "won",
+  "won’t",
+  "wouldn",
+  "wouldn’t",
+  "y",
+  "you",
+  "you’d",
+  "you’ll",
+  "you’re",
+  "you’ve",
+  "your",
+  "yours",
+  "yourself",
+  "yourselves",
+];
+
+function removeStopWords(arrayOfObjects) {
+  return arrayOfObjects.filter((item) => {
+    return !stopWords.includes(item.content);
+  });
+}
+
+/**
+ * Generates trigrams from an array of word objects with IDs.
+ * @param {Array<{id: number, content: string}>} wordObjects - Array of word objects with ID and content
+ * @returns {Object} Object containing the trigrams and a set of unique trigram texts
+ */
+function generateStructuredTrigrams(wordObjects) {
+  // If we have fewer than 3 words, we can't make trigrams
+  if (wordObjects.length < 3) {
+    return { trigrams: {}, uniqueTrigramTexts: new Set() };
+  }
+
+  const trigramDictionary = {};
+  const uniqueTrigramTexts = new Set();
+
+  // Generate trigrams by sliding a window of 3 words
+  for (let i = 0; i <= wordObjects.length - 3; i++) {
+    // Create a concatenated key for the dictionary
+    const trigramKey = `${wordObjects[i].content}${wordObjects[i + 1].content}${
+      wordObjects[i + 2].content
+    }`;
+
+    // Create a human-readable trigram with spaces
+    const readableTrigramText = `${wordObjects[i].content} ${
+      wordObjects[i + 1].content
+    } ${wordObjects[i + 2].content}`;
+
+    // Store the IDs of the words forming this trigram
+    const wordIds = [
+      wordObjects[i].id,
+      wordObjects[i + 1].id,
+      wordObjects[i + 2].id,
+    ];
+
+    // Add the readable trigram text to our set of unique trigrams
+    uniqueTrigramTexts.add(readableTrigramText);
+
+    // Check if this trigram already exists in our dictionary
+    if (trigramDictionary[trigramKey]) {
+      // If it exists, combine the word IDs with existing ones
+      const combinedIds = [
+        ...trigramDictionary[trigramKey].wordIds,
+        ...wordIds,
+      ];
+      trigramDictionary[trigramKey] = {
+        readableText: readableTrigramText,
+        wordIds: combinedIds,
+      };
+    } else {
+      // If it's new, add it to the dictionary
+      trigramDictionary[trigramKey] = {
+        readableText: readableTrigramText,
+        wordIds: wordIds,
+      };
+    }
+  }
+
+  return {
+    trigrams: trigramDictionary,
+    uniqueTrigramTexts: uniqueTrigramTexts,
+  };
+}
+
+export {
+  cleanDocxTextWord,
+  createRollingWindows,
+  cleanWord,
+  removeStopWords,
+  generateStructuredTrigrams,
+  stopWords,
+};

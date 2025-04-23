@@ -339,6 +339,7 @@ function generateSummaryReportHTML(
  * Updated to properly handle worker communication.
  */
 async function extractTextAndCompare(pdfFiles, docxFile) {
+  console.time("Bear");
   try {
     resultOutput.innerHTML =
       '<div class="processing">Processing files...</div>';
@@ -412,7 +413,7 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
         try {
           // Prepare multiple PDF files to send to the worker
           const pdfBuffers = [];
-          const transferBuffers = [];
+          const transferBuffers = []; // why is this there if it
 
           for (const pdfFile of pdfFilePair) {
             if (!pdfFile) continue; // Skip if no file (might happen with odd number of files)
@@ -492,6 +493,7 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
     );
 
     resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
+    console.timeEnd("Bear");
   } catch (error) {
     throw new Error(`Text extraction failed: ${error.message}`);
   }

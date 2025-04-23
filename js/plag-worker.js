@@ -15,11 +15,8 @@ onmessage = async function (event) {
 
     let allResults = [];
 
-    // Process each PDF file sequentially to avoid memory issues
-    for (let i = 0; i < pdfBuffers.length; i++) {
-      const pdfData = pdfBuffers[i];
+    const processPromises = pdfBuffers.map(async (pdfData, i) => {
       try {
-        // Extract and clean text from PDF using the ArrayBuffer
         const text = await extractTextFromPDFBuffer(
           pdfData.arrayBuffer,
           pdfData.name
@@ -27,27 +24,26 @@ onmessage = async function (event) {
         let databaseCleanedText = cleanWord(text);
         databaseCleanedText = slidingWindow(databaseCleanedText);
 
-        let color = colors[colorIndex];
-        colorIndex++;
-
-        // Find matching IDs using the improved matching algorithm
-        // console.log(`Processing ${pdfData.name}...`);
+        const color = colors[i % colors.length]; // Cycle through colors if there are more files than colors
 
         let commonIds = findMatchingIds(rollingWindows, databaseCleanedText, 8);
 
-        allResults.push({ Ids: commonIds, file: pdfData.name, color: color });
-
-        // Send progress update
         postMessage({
           type: "progress",
           file: pdfData.name,
           progress: (i + 1) / pdfBuffers.length,
         });
+
+        return { Ids: commonIds, file: pdfData.name, color: color };
       } catch (error) {
         console.error(`Error processing ${pdfData.name}:`, error);
-        // Don't stop the overall process if one file fails
+        return null; // Or handle errors in a way that fits your needs
       }
-    }
+    });
+
+    // Wait for all files to be processed in parallel
+    const results = await Promise.all(processPromises);
+    allResults = results.filter((result) => result !== null); // Remove any nulls if there were errors
 
     // Send the final results back to the main thread
     postMessage({
@@ -55,7 +51,6 @@ onmessage = async function (event) {
       results: allResults,
     });
   } catch (error) {
-    // **Catch any error in onmessage itself**
     console.error("Full Worker Error:", error); // Log full error in worker
     postMessage({
       type: "error",
@@ -64,7 +59,6 @@ onmessage = async function (event) {
     });
   }
 };
-
 // ... (rest of plag-worker.js code remains the same) ...
 
 /**

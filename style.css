@@ -10,7 +10,7 @@
   --text-muted: #343a40;
   --border-color: #dee2e6;
   --accent-color: #9c27b0;
-  --accent-color-darker: #6a0dad;
+  --accent-color-darker: #7b1fa2;
   --header-footer-bg: #f8f9fa;
   --header-footer-text: var(--text-dark);
   --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -32,9 +32,10 @@ body {
   transition: background-color 0.3s ease;
 }
 
-/* ============================================================
-     HEADER & NAVIGATION
-     ============================================================ */
+/* 
+       HEADER & NAVIGATION
+    */
+
 header {
   background-color: var(--header-footer-bg);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -167,7 +168,6 @@ header {
 
 .menu-toggle {
   display: none;
-  margin-right: 0%;
   background: transparent;
   border: none;
   color: var(--text-dark);
@@ -175,14 +175,19 @@ header {
   z-index: 150;
 }
 
-/* ============================================================
-     MOBILE MENU
-     ============================================================ */
+button.menu-toggle {
+  margin-right: 10%;
+}
+
+/* 
+        MOBILE MENU
+    */
+
 .mobile-menu {
   position: fixed;
   top: 0;
   right: -100%;
-  width: 70%;
+  width: 80%;
   max-width: 400px;
   height: 100vh;
   background-color: var(--bg-light);
@@ -296,9 +301,9 @@ header {
   visibility: visible;
 }
 
-/* ============================================================
-     Hero LAYOUT
-     ============================================================ */
+/* 
+        Hero LAYOUT
+    */
 
 .hero {
   /* display: flex; */
@@ -331,15 +336,26 @@ header {
   margin-bottom: 2rem;
 }
 
-/* ============================================================
-     MAIN LAYOUT
-     ============================================================ */
+/* 
+        MAIN LAYOUT
+    */
 
 .container {
   display: flex;
   max-width: 1200px;
   margin: 25px auto;
   padding: 0 10px;
+}
+
+.output_container {
+  display: flex;
+  justify-content: center;
+  max-width: 1175px;
+  margin: 25px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
 /* Sidebar */
@@ -377,9 +393,10 @@ header {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* ============================================================
-     UPLOAD AREAS
-     ============================================================ */
+/* 
+        UPLOAD AREAS
+    */
+
 .upload-area {
   padding: 40px 20px;
   text-align: center;
@@ -435,9 +452,10 @@ header {
   display: none;
 }
 
-/* ============================================================
-     PREVIEW AREAS
-     ============================================================ */
+/* 
+        PREVIEW AREAS
+    */
+
 .preview_area {
   display: flex;
   gap: 25px;
@@ -490,15 +508,15 @@ button:focus {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* ============================================================
-     OUTPUT AREA
-     ============================================================ */
+/* 
+        OUTPUT AREA
+    */
+
 #output {
   justify-self: center;
   text-align: justify;
-  width: 100%;
-  margin-top: 20px;
-  padding: 15px;
+  width: 95%;
+  padding: 25px;
   background: var(--bg-light);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -529,9 +547,10 @@ button:focus {
   word-break: break-word;
 }
 
-/* ============================================================
-     PROCESSING DIALOG
-     ============================================================ */
+/* 
+        PROCESSING DIALOG
+    */
+
 .processing-dialog {
   align-self: center;
   justify-self: center;
@@ -602,9 +621,10 @@ button:focus {
   border-radius: 10px;
 }
 
-/* ============================================================
-     FOOTER
-     ============================================================ */
+/* 
+        FOOTER
+    */
+
 footer {
   background-color: #fff;
   color: var(--primary-color);
@@ -615,9 +635,10 @@ footer {
   box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.09);
 }
 
-/* ============================================================
-     TABLE STYLES
-     ============================================================ */
+/* 
+        TABLE STYLES
+    */
+
 table {
   width: 100%;
   table-layout: auto;
@@ -669,9 +690,10 @@ tr:hover {
   color: #2563eb;
 }
 
-/* ============================================================
-     IMAGES
-     ============================================================ */
+/* 
+        IMAGES
+    */
+
 img {
   max-width: 85%;
   height: auto;
@@ -681,17 +703,103 @@ img {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* ============================================================
-     UTILITY CLASSES
-     ============================================================ */
+/* Utility Classes */
 .word-wrap {
   word-break: break-word;
   white-space: normal;
 }
 
+.font-bold {
+  font-weight: bold;
+}
+/* Media Queries */
 /* ============================================================
-     RESPONSIVE DESIGN
-     ============================================================ */
+         RESPONSIVE DESIGN
+         ============================================================ */
+@media (max-width: 992px) {
+  .nav {
+    display: none;
+  }
+
+  .action-buttons {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    padding: 0 10px;
+  }
+
+  .hero {
+    margin: 10px;
+  }
+
+  .sidebar {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+
+  .main-content {
+    width: 100%;
+  }
+
+  .preview_area {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .preview_area div {
+    min-height: 120px;
+  }
+
+  .sidebar h2 {
+    font-size: 1.3rem;
+  }
+
+  .sidebar p,
+  .upload-area p,
+  .upload-area button,
+  #checkplagiarism,
+  #output,
+  .processing-dialog p,
+  footer p {
+    font-size: 1rem;
+  }
+
+  .upload-area {
+    padding: 30px 15px;
+  }
+
+  .preview_area div {
+    padding: 15px;
+  }
+
+  .processing-dialog {
+    padding: 25px;
+  }
+
+  .processing-dialog .loading-spinner {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+    border-width: 8px;
+  }
+
+  .processing-dialog progress {
+    height: 10px;
+  }
+}
+
+/* ============================================================
+         RESPONSIVE DESIGN
+         ============================================================ */
 @media (max-width: 992px) {
   .nav {
     display: none;
@@ -776,7 +884,7 @@ img {
 .step-title {
   font-size: 1.5rem;
   font-weight: 500;
-  color: var(--accent-color-darker);
+  color: var(--primary-color);
   margin-bottom: 1rem;
 }
 
@@ -797,7 +905,7 @@ img {
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  background-color: var(--accent-color-darker);
+  background-color: var(--primary-color);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -816,6 +924,7 @@ img {
   max-width: 1180px;
   margin: 25px auto;
   padding: 2.5rem;
+  text-align: center;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
@@ -830,7 +939,7 @@ img {
   background-color: white;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
 }
@@ -840,15 +949,18 @@ img {
   font-size: 1.4rem;
   font-weight: 500;
   margin-bottom: 1rem;
-  color: var(--accent-color-darker);
-  display: flex;
-  align-items: center;
 }
 
 .feature-card:hover {
   background-color: rgb(255, 243, 252);
   transform: translateY(-5px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card h3 {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .feature-icon {
