@@ -356,6 +356,12 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
     // Create rolling windows from the DOCX content for comparison
     let rollingWindows = plagHelper.createRollingWindows(docxTextWord, 12);
 
+    let docx_obj_no_stopwords = plagHelper.removeStopWords(docxTextWord);
+
+    let docx_trigrams = plagHelper.generateStructuredTrigrams(
+      docx_obj_no_stopwords
+    );
+
     const maxWorkers = 4;
     const workers = [];
     const results = [];
@@ -411,12 +417,11 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
         };
 
         try {
-          // Prepare multiple PDF files to send to the worker
           const pdfBuffers = [];
-          const transferBuffers = []; // why is this there if it
+          const transferBuffers = [];
 
           for (const pdfFile of pdfFilePair) {
-            if (!pdfFile) continue; // Skip if no file (might happen with odd number of files)
+            if (!pdfFile) continue;
 
             const pdfBuffer = await pdfFile.arrayBuffer();
             pdfBuffers.push({
@@ -437,10 +442,16 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
             {
               pdfBuffers: pdfBuffers,
               rollingWindows: rollingWindows,
+              docx_trigrams: {
+                trigrams: docx_trigrams.trigrams,
+                uniqueTrigramTexts: Array.from(
+                  docx_trigrams.uniqueTrigramTexts
+                ),
+              },
               colors: [color1, color2],
               action: "process",
             },
-            transferBuffers
+            transferBuffers // Pass transferBuffers as second argument for better performance
           );
         } catch (error) {
           reject(new Error(`Failed to read PDF file(s): ${error.message}`));

@@ -255,6 +255,7 @@ const stopWords = [
 ];
 
 function removeStopWords(arrayOfObjects) {
+  console.log(typeof arrayOfObjects);
   return arrayOfObjects.filter((item) => {
     return !stopWords.includes(item.content);
   });
@@ -315,7 +316,7 @@ function generateStructuredTrigrams(wordObjects) {
       };
     }
   }
-
+  console.log("Trigram Dictionary:", trigramDictionary);
   return {
     trigrams: trigramDictionary,
     uniqueTrigramTexts: uniqueTrigramTexts,
