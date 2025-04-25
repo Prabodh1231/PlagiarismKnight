@@ -81,6 +81,7 @@ const stopWords = [
   "again",
   "against",
   "ain",
+  "al",
   "all",
   "am",
   "an",
@@ -118,6 +119,7 @@ const stopWords = [
   "down",
   "during",
   "each",
+  "et",
   "few",
   "for",
   "from",
@@ -297,25 +299,15 @@ function generateStructuredTrigrams(wordObjects) {
     // Add the readable trigram text to our set of unique trigrams
     uniqueTrigramTexts.add(readableTrigramText);
 
-    // Check if this trigram already exists in our dictionary
-    if (trigramDictionary[trigramKey]) {
-      // If it exists, combine the word IDs with existing ones
-      const combinedIds = [
-        ...trigramDictionary[trigramKey].wordIds,
-        ...wordIds,
-      ];
-      trigramDictionary[trigramKey] = {
-        readableText: readableTrigramText,
-        wordIds: combinedIds,
-      };
-    } else {
-      // If it's new, add it to the dictionary
+    // Only add the trigram if it doesn't already exist in our dictionary
+    if (!trigramDictionary[trigramKey]) {
       trigramDictionary[trigramKey] = {
         readableText: readableTrigramText,
         wordIds: wordIds,
       };
     }
   }
+
   console.log("Trigram Dictionary:", trigramDictionary);
   return {
     trigrams: trigramDictionary,

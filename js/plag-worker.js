@@ -7,7 +7,7 @@ const CONFIG = {
   LARGE_DOC_THRESHOLD: 10000,
   SAMPLING_RATE_DIVISOR: 1000,
   SLIDING_MATCH_THRESHOLD: 8,
-  TRIGRAM_MATCH_THRESHOLD: 14,
+  TRIGRAM_MATCH_THRESHOLD: 21,
 };
 
 /**
@@ -274,6 +274,7 @@ const stopWordsSet = new Set([
   "again",
   "against",
   "ain",
+  "al",
   "all",
   "am",
   "an",
@@ -311,6 +312,7 @@ const stopWordsSet = new Set([
   "down",
   "during",
   "each",
+  "et",
   "few",
   "for",
   "from",
