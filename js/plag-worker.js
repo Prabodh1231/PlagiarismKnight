@@ -3,7 +3,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.mjs";
 
 // Configuration constants
 const CONFIG = {
-  WINDOW_SIZE: 12,
+  WINDOW_SIZE: 11,
   LARGE_DOC_THRESHOLD: 10000,
   SAMPLING_RATE_DIVISOR: 1000,
   SLIDING_MATCH_THRESHOLD: 8,

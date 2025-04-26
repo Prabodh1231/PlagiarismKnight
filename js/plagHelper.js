@@ -27,7 +27,7 @@ function cleanDocxTextWord(wordsArray) {
  * with 'contents' (an array of unique content strings) and
  * 'ids' (an array of the corresponding unique IDs).
  */
-function createRollingWindows(data, windowSize = 12) {
+function createRollingWindows(data, windowSize = 13) {
   const rollingWindows = [];
 
   for (let i = 0; i <= data.length - windowSize; i++) {

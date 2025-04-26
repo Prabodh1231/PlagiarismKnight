@@ -996,6 +996,7 @@ img {
 
 .faq-answer {
   max-height: 0;
+  text-align: justify;
   overflow: hidden;
   transition: max-height 0.3s ease-out;
   padding-left: 1rem;
