@@ -696,7 +696,7 @@ function addSpanTagsAndModify(array, allResults) {
 
     if (matchingResult) {
       // Wrap the content in a span tag with the color from the matching result
-      const modifiedContent = `<span style="background-color: ${matchingResult.color.hex}">${item.content}</span>`;
+      const modifiedContent = `<span title="${matchingResult.file}"style="background-color: ${matchingResult.color.hex}">${item.content}</span>`;
       return {
         ...item,
         content: modifiedContent,

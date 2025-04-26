@@ -492,6 +492,7 @@ function generateTextTrigrams(textWords) {
 
 /**
  * Finds document IDs that match query terms based on a minimum similarity threshold.
+ * Stops searching through document windows for a query term once a match is found for that query.
  *
  * @param {Array<Object>} documentWindows - An array of document windows, each containing content terms and IDs
  * Each window should have {contents: Array<string>, ids: Array<string>}
@@ -501,10 +502,17 @@ function generateTextTrigrams(textWords) {
  */
 function findMatchingIds(documentWindows, queryTerms, minMatchThreshold = 8) {
   const matchingDocumentIds = new Set();
+
   for (const currentQuerySet of queryTerms) {
     const termSet = new Set(currentQuerySet);
+    let queryMatched = false; // Flag to track if the current query has found a match
 
     for (const window of documentWindows) {
+      // Optimization: If the current query has already found a match, move to the next window
+      if (queryMatched) {
+        continue;
+      }
+
       let matchedTermCount = 0;
       let nonMatchedTermCount = 0;
       let currentWindowMatchingIds = [];
@@ -530,6 +538,7 @@ function findMatchingIds(documentWindows, queryTerms, minMatchThreshold = 8) {
 
       if (matchedTermCount >= minMatchThreshold) {
         currentWindowMatchingIds.forEach((id) => matchingDocumentIds.add(id));
+        queryMatched = true; // Set the flag to indicate a match for the current query
       }
     }
   }
