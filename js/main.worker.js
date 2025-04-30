@@ -81,14 +81,13 @@ onmessage = async function (event) {
           let databaseCleanedText = cleanWord(text);
 
           let databaseCleanedText01 = slidingWindow(databaseCleanedText);
-          // Free up memory
 
           let textWithoutStopWords = removeStopWords(databaseCleanedText);
 
           databaseCleanedText = null;
 
           let textTrigrams = generateTextTrigrams(textWithoutStopWords);
-          // Free up memory
+
           textWithoutStopWords = null;
 
           const color = colors[i % colors.length];
@@ -106,7 +105,6 @@ onmessage = async function (event) {
             ),
           ]);
 
-          console.log(trigramComparison.matchedWordIds);
           // Free up memory
           databaseCleanedText01 = null;
           textTrigrams = null;
@@ -474,7 +472,6 @@ function generateTextTrigrams(textWords) {
 
   const trigramSet = new Set();
   const numTrigrams = textWords.length - 2;
-  const trigrams = new Array(numTrigrams);
 
   // Pre-join spaces for efficiency
   const space = " ";
