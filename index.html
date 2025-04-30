@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Plagiarism Checker</title>
+    <link rel="icon" href="/images/plagknight_512.png" type="image/png" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -11,7 +12,9 @@
       <div class="header-container">
         <nav class="navbar" role="navigation">
           <a href="./index.html" class="brand">
-            <div class="logo">P</div>
+            <div class="logo">
+              <img src="/images/plagknight_512.png" alt="PlagKnight icon" />
+            </div>
             <h1 class="brand-name">Plagiarism<span>Checker</span></h1>
           </a>
 
@@ -68,24 +71,27 @@
       <section class="container">
         <aside class="sidebar">
           <h2>Instructions</h2>
-          <p>1. Upload a PDF file to create your database.</p>
-          <p>2. Upload a DOCX file to check for plagiarism.</p>
-          <p>3. Click "Check Plagiarism" to analyze the files.</p>
+          <p>1. Upload 10-200 PDF files to create your reference database.</p>
+          <p>2. Upload a single DOCX file to check for plagiarism.</p>
+          <p>
+            3. Click "Check Plagiarism" and wait for the color-coded results.
+          </p>
+          <p>4. Review highlighted matches in the detailed report below.</p>
         </aside>
 
         <section class="main-content">
           <div class="upload-area" id="uploadAreaPdf">
             <p>
               Create Your Database <br />
-              Drag & Drop PDF File Here
+              Drag & Drop PDF Files Here
             </p>
             <label for="fileInput1" aria-describedby="pdf-file-description">
               <button
                 onclick="document.getElementById('fileInput1').click()"
                 type="button"
-                aria-label="Select PDF file to create database"
+                aria-label="Select PDF files to create database"
               >
-                Select File
+                Upload References
               </button>
             </label>
             <input
@@ -96,21 +102,23 @@
               multiple
             />
             <div id="pdf-file-description">
-              Select one or more PDF files to create the database.
+              Upload 10-200 PDF files to create your reference database.<br />
+              No file size limits. More files = better detection.
             </div>
           </div>
 
           <div class="upload-area" id="uploadAreaDocx">
             <p>
-              <strong> Select Your Work for Plagiarism</strong> <br />
+              <strong>Select Your Work for Plagiarism Check</strong> <br />
               Drag & Drop DOCX File Here
             </p>
             <label for="fileInput2">
               <button
                 onclick="document.getElementById('fileInput2').click()"
                 type="button"
+                aria-label="Select DOCX file to check for plagiarism"
               >
-                Select File
+                Upload Document
               </button>
             </label>
             <input
@@ -119,6 +127,11 @@
               class="file-input"
               accept=".docx"
             />
+            <div id="docx-file-description">
+              Upload one DOCX file to check against your PDF database.<br />
+              Any file size is supported. Results are shown with color-coded
+              highlights.
+            </div>
           </div>
 
           <div class="preview_area" aria-live="polite">

@@ -111,17 +111,18 @@ onmessage = async function (event) {
           databaseCleanedText01 = null;
           textTrigrams = null;
 
-          let finalResult = Array.from(
-            new Set([...commonIds, ...trigramComparison.matchedWordIds])
-          );
-
           postMessage({
             type: "progress",
             file: pdfData.name,
             filesCompleted: 1,
           });
 
-          return { Ids: finalResult, file: pdfData.name, color: color };
+          return {
+            Ids: commonIds,
+            alikeTrigramTexts: trigramComparison.matchedTrigramTexts,
+            file: pdfData.name,
+            color: color,
+          };
         } catch (error) {
           console.error(`Error processing ${pdfData.name}:`, error);
           return null;
@@ -546,11 +547,14 @@ function findMatchingIds(documentWindows, queryTerms, minMatchThreshold = 8) {
 }
 
 /**
- * Compares two sets of trigrams to check for significant overlap.
- * @param {Object} structuredTrigrams - Object with trigrams and uniqueTrigramTexts
- * @param {Set<string>} textTrigrams - Set of trigram strings
- * @param {number} matchThreshold - Minimum number of matches to consider significant
- * @returns {Object} Result with match status and matched word IDs
+ * Compares two sets of trigrams to check for significant overlap, designed for IDF weighting.
+ * @param {Object} structuredTrigrams - Object with trigrams and uniqueTrigramTexts.
+ * Expected structure: { trigrams: { [trigramText]: { wordIds: string[], readableText: string } },
+ * uniqueTrigramTexts: Set<string> }
+ * @param {Set<string>} textTrigrams - Set of trigram strings from the text being checked.
+ * @param {number} matchThreshold - Minimum number of matches to consider significant.  This will be used
+ * as a count of matching trigrams, NOT a sum of IDF scores.
+ * @returns {Object} Result with match status, match count, and matching trigram texts.
  */
 function compareTrigramSets(
   structuredTrigrams,
@@ -577,31 +581,28 @@ function compareTrigramSets(
     return {
       isMatch: false,
       matchCount: potentialOverlap,
-      matchedWordIds: [],
+      matchedTrigramTexts: [], // Changed to return trigram texts
     };
   }
 
-  // If we're here, there's enough potential overlap, so collect matching IDs
-  const matchedWordIds = new Set();
+  // If we're here, there's enough potential overlap
   let alikecount = 0;
+  const matchedTrigramTexts = []; // Changed to store matching trigram *texts*
 
-  // Direct check for matching trigrams and collect IDs with early return optimization
-  for (const key in structuredTrigrams.trigrams) {
-    const entry = structuredTrigrams.trigrams[key];
-    const entryText = entry.readableText;
-
+  // Iterate through the unique trigrams from the structured data
+  for (const DOCXtrigram of uniqueTrigramTexts) {
+    // Changed iteration
     // Check if this trigram exists in the text trigrams set
-    if (textTrigrams.has(entryText)) {
-      entry.wordIds.forEach((id) => matchedWordIds.add(id));
+    if (textTrigrams.has(DOCXtrigram)) {
       alikecount++;
-
+      matchedTrigramTexts.push(DOCXtrigram); // Add the trigram text to the result
       // OPTIMIZATION: Early return if we've found all possible matches
       if (alikecount === potentialOverlap) {
         console.log("All elements match, returning early.");
         return {
           isMatch: alikecount >= matchThreshold,
           matchCount: alikecount,
-          matchedWordIds: Array.from(matchedWordIds),
+          matchedTrigramTexts: matchedTrigramTexts,
         };
       }
     }
@@ -610,6 +611,6 @@ function compareTrigramSets(
   return {
     isMatch: alikecount >= matchThreshold, // Use alikecount for match status
     matchCount: alikecount,
-    matchedWordIds: Array.from(matchedWordIds),
+    matchedTrigramTexts: matchedTrigramTexts, // Return the array of matching texts.
   };
 }

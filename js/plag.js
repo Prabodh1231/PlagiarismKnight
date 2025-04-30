@@ -354,7 +354,7 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
     let docxlength = docxTextWord.length;
 
     // Create rolling windows from the DOCX content for comparison
-    let rollingWindows = plagHelper.createRollingWindows(docxTextWord, 12);
+    let rollingWindows = plagHelper.createRollingWindows(docxTextWord, 13);
 
     let docx_obj_no_stopwords = plagHelper.removeStopWords(docxTextWord);
 
@@ -493,11 +493,23 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
 
     const allResults = results.flat();
 
-    docxArray.words = addSpanTagsAndModify(docxArray.words, allResults);
+    const trigramFrequency = findMostDistinctiveTrigrams(allResults, 10);
+
+    const IdsoftopTrigrams = getWordIdsForDistinctiveTrigrams(
+      trigramFrequency,
+      docx_trigrams
+    );
+
+    const finalresults = updateDocumentIdsWithDistinctiveTrigrams(
+      allResults,
+      IdsoftopTrigrams
+    );
+
+    docxArray.words = addSpanTagsAndModify(docxArray.words, finalresults);
 
     let highlightedTextHTML = combineWordsAndTagsInOrder(docxArray);
     const summaryReportHTML = generateSummaryReportHTML(
-      allResults,
+      finalresults,
       pdfFiles,
       docxFile,
       docxlength
@@ -685,6 +697,217 @@ function separateWordsAndTags(inputArray) {
   });
 
   return { words, tags };
+}
+
+/**
+ * Finds the most distinctive trigrams based on IDF scores, including all trigrams that tie for top scores
+ *
+ * @param {Array<{Ids: string[], alikeTrigramTexts: string[], file: string, color: string}>} dataArray
+ * An array of objects, where each object contains:
+ * - Ids: An array of document IDs.
+ * - alikeTrigramTexts: An array of ALL trigram texts in the document.
+ * - file: The file name.
+ * - color: A color.
+ * @param {number} [percentToReturn=10] Percentage of top trigrams to return (default 10%)
+ * @returns {Array<{trigram: string, idfScore: number, documentCount: number}>}
+ * An array of the most distinctive trigrams sorted by IDF score (highest first),
+ * including all trigrams that tie at the cutoff threshold
+ */
+function findMostDistinctiveTrigrams(dataArray, percentToReturn = 10) {
+  // 1. Input Validation
+  if (!Array.isArray(dataArray)) {
+    console.error("Invalid input. dataArray must be an array.");
+    return [];
+  }
+
+  // 2. Calculate Document Frequency (DF)
+  const trigramDocumentFrequency = new Map(); // Map to store DF: trigram -> count
+  const totalDocuments = dataArray.length;
+
+  // Set of all unique trigrams to track the universe of trigrams
+  const allUniqueTrigrams = new Set();
+
+  for (const item of dataArray) {
+    if (Array.isArray(item.alikeTrigramTexts)) {
+      const uniqueTrigrams = new Set(item.alikeTrigramTexts); // Count each trigram *once* per document
+
+      // Add to the full universe of trigrams
+      for (const trigram of uniqueTrigrams) {
+        allUniqueTrigrams.add(trigram);
+      }
+
+      // Update document frequency counts
+      for (const trigram of uniqueTrigrams) {
+        trigramDocumentFrequency.set(
+          trigram,
+          (trigramDocumentFrequency.get(trigram) || 0) + 1
+        );
+      }
+    }
+  }
+
+  // 3. Calculate IDF for each trigram and create an array of trigram objects
+  const trigramArray = Array.from(allUniqueTrigrams).map((trigram) => {
+    const documentFrequency = trigramDocumentFrequency.get(trigram) || 0;
+    const idfScore = Math.log(totalDocuments / (documentFrequency + 1)); // Add 1 to avoid division by zero
+
+    return {
+      trigram,
+      idfScore,
+      documentCount: documentFrequency,
+    };
+  });
+
+  // 4. Sort by IDF score (highest first)
+  const sortedTrigrams = trigramArray.sort((a, b) => b.idfScore - a.idfScore);
+
+  // 5. Determine how many trigrams to return based on percentage
+  const numberOfTrigramsToReturn = Math.ceil(
+    sortedTrigrams.length * (percentToReturn / 100)
+  );
+
+  if (numberOfTrigramsToReturn >= sortedTrigrams.length) {
+    return sortedTrigrams; // Return all if the percentage is too high
+  }
+
+  // 6. Get the IDF score at the cutoff point
+  const cutoffScore = sortedTrigrams[numberOfTrigramsToReturn - 1].idfScore;
+
+  // 7. Include all trigrams that have an IDF score greater than or equal to the cutoff
+  const result = sortedTrigrams.filter((item) => item.idfScore >= cutoffScore);
+
+  return result;
+}
+
+/**
+ * Finds the wordIds corresponding to the distinctive trigrams we identified
+ *
+ * @param {Array<{trigram: string, idfScore: number, documentCount: number}>} distinctiveTrigrams
+ * The array of distinctive trigrams returned by findMostDistinctiveTrigrams
+ *
+ * @param {{trigrams: Object, uniqueTrigramTexts: Array<string>}} trigramData
+ * Object containing:
+ * - trigrams: Dictionary where keys are trigramKeys and values are objects with readableText and wordIds
+ * - uniqueTrigramTexts: Array of unique trigram texts
+ *
+ * @returns {Array<{trigram: string, idfScore: number, documentCount: number, wordIds: Array<string>, readableText: string}>}
+ * The original distinctive trigrams with wordIds and readableText added
+ */
+function getWordIdsForDistinctiveTrigrams(distinctiveTrigrams, trigramData) {
+  // Input validation
+  if (
+    !Array.isArray(distinctiveTrigrams) ||
+    !trigramData ||
+    !trigramData.trigrams
+  ) {
+    console.error("Invalid input parameters");
+    return [];
+  }
+
+  const { trigrams: trigramDictionary } = trigramData;
+  const result = [];
+
+  // For each distinctive trigram
+  for (const distinctiveTrigram of distinctiveTrigrams) {
+    const { trigram, idfScore, documentCount } = distinctiveTrigram;
+
+    // Find the matching trigram in the dictionary
+    // We need to search through the dictionary as we don't know the key directly
+    let found = false;
+
+    for (const trigramKey in trigramDictionary) {
+      const trigramEntry = trigramDictionary[trigramKey];
+
+      // Compare trigram text with the readableText in the dictionary
+      if (trigramEntry.readableText === trigram) {
+        // Match found, add wordIds and readableText to our result
+        result.push({
+          trigram,
+          idfScore,
+          documentCount,
+          wordIds: trigramEntry.wordIds,
+          readableText: trigramEntry.readableText,
+        });
+        found = true;
+        break;
+      }
+    }
+
+    // If no match was found in the dictionary
+    if (!found) {
+      console.warn(`No matching entry found for trigram: ${trigram}`);
+      // Still include the trigram in results, but with empty wordIds
+      result.push({
+        ...distinctiveTrigram,
+        wordIds: [],
+        readableText: trigram,
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Updates the Ids array of each document in dataArray if it contains any of the distinctive trigrams
+ *
+ * @param {Array<{Ids: string[], alikeTrigramTexts: string[], file: string, color: string}>} dataArray
+ * The original array of document objects
+ *
+ * @param {Array<{trigram: string, idfScore: number, documentCount: number, wordIds: Array<string>}>} distinctiveTrigramsWithIds
+ * The array of distinctive trigrams with their wordIds
+ *
+ * @returns {Array<{Ids: string[], alikeTrigramTexts: string[], file: string, color: string}>}
+ * A new array with updated Ids for documents containing distinctive trigrams
+ */
+function updateDocumentIdsWithDistinctiveTrigrams(
+  dataArray,
+  distinctiveTrigramsWithIds
+) {
+  // Input validation
+  if (!Array.isArray(dataArray) || !Array.isArray(distinctiveTrigramsWithIds)) {
+    console.error("Invalid input parameters");
+    return [];
+  }
+
+  // Create a new array to avoid mutating the original
+  return dataArray.map((document) => {
+    // Create a shallow copy of the document
+    const updatedDocument = { ...document };
+
+    // If document doesn't have alikeTrigramTexts, return it unchanged
+    if (!Array.isArray(document.alikeTrigramTexts)) {
+      return updatedDocument;
+    }
+
+    // Create a set of the document's existing IDs for efficient lookups
+    const existingIds = new Set(document.Ids || []);
+    // Array to collect new IDs
+    const newIds = [];
+
+    // For each distinctive trigram
+    for (const distinctiveTrigram of distinctiveTrigramsWithIds) {
+      const { trigram, wordIds } = distinctiveTrigram;
+
+      // If this trigram exists in the document's alikeTrigramTexts
+      if (document.alikeTrigramTexts.includes(trigram)) {
+        // Add all wordIds from this trigram that aren't already in the document's Ids
+        for (const wordId of wordIds) {
+          if (!existingIds.has(wordId)) {
+            newIds.push(wordId);
+            existingIds.add(wordId); // Prevent duplicates within newly added IDs
+          }
+        }
+      }
+    }
+
+    // Only update the Ids if we found new ones to add
+    if (newIds.length > 0) {
+      updatedDocument.Ids = [...(document.Ids || []), ...newIds];
+    }
+
+    return updatedDocument;
+  });
 }
 
 function addSpanTagsAndModify(array, allResults) {
