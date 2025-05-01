@@ -6,12 +6,13 @@
     <title>Plagiarism Checker</title>
     <link rel="icon" href="/images/plagknight_512.png" type="image/png" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="index.css" />
   </head>
   <body>
     <header class="header" role="banner">
       <div class="header-container">
         <nav class="navbar" role="navigation">
-          <a href="./index.html" class="brand">
+          <a href="/index.html" class="brand">
             <div class="logo">
               <img src="/images/plagknight_512.png" alt="PlagKnight icon" />
             </div>
@@ -22,7 +23,7 @@
             <ul class="nav-list">
               <li><a href="/index.html" class="nav-link active">Home</a></li>
               <li><a href="/about.html" class="nav-link">About</a></li>
-              <li><a href="#" class="nav-link">Services</a></li>
+              <li><a href="#" class="nav-link">Guide</a></li>
               <li><a href="#" class="nav-link">Contact</a></li>
             </ul>
           </div>
@@ -42,13 +43,13 @@
     <div class="mobile-menu">
       <ul class="mobile-nav-list">
         <li class="mobile-nav-item">
-          <a href="./index.html" class="mobile-nav-link active">Home</a>
+          <a href="/index.html" class="mobile-nav-link active">Home</a>
         </li>
         <li class="mobile-nav-item">
-          <a href="./about.html" class="mobile-nav-link">About</a>
+          <a href="/about.html" class="mobile-nav-link">About</a>
         </li>
         <li class="mobile-nav-item">
-          <a href="#" class="mobile-nav-link">Services</a>
+          <a href="#" class="mobile-nav-link">Guide</a>
         </li>
         <li class="mobile-nav-item">
           <a href="#" class="mobile-nav-link">Contact</a>
@@ -135,8 +136,12 @@
           </div>
 
           <div class="preview_area" aria-live="polite">
-            <div id="preview1" aria-label="PDF preview"></div>
-            <div id="preview2" aria-label="DOCX preview"></div>
+            <div id="preview1" aria-label="PDF preview">
+              References Preview Area
+            </div>
+            <div id="preview2" aria-label="DOCX preview">
+              Document Preview Area
+            </div>
           </div>
 
           <button id="checkplagiarism">Check Plagiarism</button>
@@ -157,12 +162,19 @@
     </dialog>
 
     <footer>
-      <p>&copy; 2025 Plagiarism Checker. All rights reserved.</p>
-      <p>Your work stays yours. No data collection. No tracking.</p>
+      <div>
+        <p>&copy; 2025 PlagiarismGuard - Open Source Plagiarism Checker</p>
+        <p>Empowering academic integrity through privacy and accessibility.</p>
+        <div class="footer-links">
+          <a href="#">GitHub</a>
+          <a href="#">Guide</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
     </footer>
 
     <script src="js/script.js"></script>
     <script src="js/mammoth.browser.js"></script>
-    <script type="module" src="js/plag.js"></script>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>

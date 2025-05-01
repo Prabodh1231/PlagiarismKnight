@@ -2,7 +2,7 @@
  * This script handles the drag-and-drop functionality for PDF and DOCX files,
  * extracts text from the files, and compares the text for plagiarism detection.
  * @author [Prabodh Singh]
- * @version 1.0.7
+ * @version 1.0.0
  */
 
 // DOM element references

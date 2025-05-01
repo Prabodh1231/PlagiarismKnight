@@ -1,0 +1,148 @@
+:root {
+  --spacing: 6rem;
+  --border-radius: 12px;
+}
+
+.container-about {
+  padding: 3rem 0;
+  background-color: var(--header-footer-bg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 24px 24px;
+  position: relative; /* For absolute positioning */
+  text-align: justify;
+}
+
+.brand-name-about {
+  font-size: 2.5rem;
+  font-weight: 600;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: var(--primary-color);
+  letter-spacing: -1px;
+}
+
+.brand-name-about span {
+  color: var(--accent-color-darker);
+  font-weight: 600;
+}
+
+.tagline {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  font-weight: 400;
+}
+
+section {
+  padding: var(--spacing) 0;
+}
+
+section:nth-child(even) {
+  background-color: var(--bg-white);
+}
+
+h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  letter-spacing: -0.5px;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 2rem 0 1rem;
+  color: var(--text-dark);
+}
+
+p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.highlight {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.audience-list {
+  list-style-type: none;
+  margin: 2rem 0;
+}
+
+.audience-list li {
+  margin-bottom: 1.5rem;
+  padding-left: 2rem;
+  position: relative;
+  font-size: 1.1rem;
+}
+
+.audience-list li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.cta-wrapper {
+  margin: 3rem 0 1rem;
+}
+
+button {
+  background-color: var(--accent-color);
+  border: none;
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 5px rgba(233, 30, 99, 0.1);
+}
+
+button a {
+  color: var(--bg-white);
+  text-decoration: none;
+}
+
+button:hover,
+button:focus {
+  background-color: var(--accent-color-darker);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(233, 30, 99, 0.15);
+}
+
+.open-source-box {
+  background-color: var(--box-bg);
+  padding: 2rem;
+  padding-right: 6rem;
+  margin: 3rem calc(50% - 51vw) 3rem 0;
+  border-left: 4px solid var(--primary-color);
+  border-radius: 0 0 0 0;
+  position: relative;
+  width: calc(100% + (50vw - 51%));
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing: 4rem;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  .open-source-box {
+    padding-right: 2rem;
+  }
+}

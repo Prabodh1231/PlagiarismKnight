@@ -4,14 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Plagiarism Checker</title>
+    <link rel="icon" href="/images/plagknight_512.png" type="image/png" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="about.css" />
   </head>
   <body>
     <header class="header" role="banner">
       <div class="header-container">
         <nav class="navbar" role="navigation">
           <a href="/index.html" class="brand">
-            <div class="logo">P</div>
+            <div class="logo">
+              <img src="/images/plagknight_512.png" alt="PlagKnight icon" />
+            </div>
             <h1 class="brand-name">Plagiarism<span>Checker</span></h1>
           </a>
 
@@ -19,7 +23,7 @@
             <ul class="nav-list">
               <li><a href="/index.html" class="nav-link">Home</a></li>
               <li><a href="/about.html" class="nav-link active">About</a></li>
-              <li><a href="#" class="nav-link">Services</a></li>
+              <li><a href="#" class="nav-link">Guide</a></li>
               <li><a href="#" class="nav-link">Contact</a></li>
             </ul>
           </div>
@@ -39,13 +43,13 @@
     <div class="mobile-menu">
       <ul class="mobile-nav-list">
         <li class="mobile-nav-item">
-          <a href="./index.html" class="mobile-nav-link">Home</a>
+          <a href="/index.html" class="mobile-nav-link">Home</a>
         </li>
         <li class="mobile-nav-item">
           <a href="/about.html" class="mobile-nav-link active">About</a>
         </li>
         <li class="mobile-nav-item">
-          <a href="#" class="mobile-nav-link">Services</a>
+          <a href="#" class="mobile-nav-link">Guide</a>
         </li>
         <li class="mobile-nav-item">
           <a href="#" class="mobile-nav-link">Contact</a>
@@ -53,313 +57,175 @@
       </ul>
     </div>
 
-    <main role="main">
-      <section class="hero">
-        <div class="hero-content">
-          <h1 class="hero-title">Your Academic Integrity Companion</h1>
-          <p class="hero-subtitle">
-            PlagCheck is a completely free, privacy-focused plagiarism detection
-            tool that works 100% offline. No data is ever sent to servers, and
-            no account is required.
+    <div class="overlay"></div>
+
+    <main>
+      <div class="container-about">
+        <div class="container">
+          <h1 class="brand-name-about">Plagiarism<span>Guard</span></h1>
+          <p class="tagline">
+            The world's first private and local plagiarism detection tool
           </p>
-          <a href="/index.html" style="text-decoration: none"
-            ><button>Try It Now</button></a
-          >
+        </div>
+      </div>
+
+      <section id="intro">
+        <div class="container">
+          <h2>Introduction</h2>
+          <p>
+            Welcome to <span class="highlight">PlagiarismGuard</span>, the
+            world's first private and local plagiarism detection tool. We are
+            dedicated to empowering academicians, researchers, and educators —
+            especially those from institutions with limited resources — by
+            offering a secure, accessible, and reliable way to check academic
+            work for originality.
+          </p>
+          <p>
+            We understand the challenges faced by those who do not have access
+            to professional-grade plagiarism detection tools often available
+            only to prestigious institutions. Our mission is to bridge this gap
+            and provide a robust self-evaluation solution that protects both
+            your data and your academic integrity.
+          </p>
         </div>
       </section>
 
-      <section class="features">
-        <h2 class="hero-title">How It Works</h2>
-        <p>
-          PlagCheck operates entirely on your device - no internet connection
-          required. The entire process happens locally, ensuring your work
-          remains completely private.
-        </p>
-
-        <div class="steps">
-          <div class="step">
-            <div class="step-number"></div>
-            <div class="step-content">
-              <h3 class="step-title">Upload Your Document</h3>
-              <p>
-                Select the document you want to check for plagiarism. We support
-                .docx, .pdf, .txt, and many other formats.
-              </p>
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-number"></div>
-            <div class="step-content">
-              <h3 class="step-title">Add Reference Materials</h3>
-              <p>
-                Upload reference materials that your work might be compared
-                against. These could be course materials, research papers, or
-                other sources.
-              </p>
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-number"></div>
-            <div class="step-content">
-              <h3 class="step-title">Run The Check</h3>
-              <p>
-                Our algorithm analyzes your document against the reference
-                materials to identify potential similarities.
-              </p>
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-number"></div>
-            <div class="step-content">
-              <h3 class="step-title">Review Results</h3>
-              <p>
-                Receive a detailed report highlighting potential matches and
-                similarity percentages to help you ensure originality.
-              </p>
-            </div>
-          </div>
+      <section id="mission">
+        <div class="container">
+          <h2>Mission & Values</h2>
+          <p>
+            At <span class="highlight">PlagiarismGuard</span>, our mission is to
+            promote academic honesty by making trustworthy plagiarism checking
+            tools available to everyone. We believe that originality is the
+            cornerstone of scholarly work and that every academician deserves
+            tools that help protect and validate their contributions.
+          </p>
+          <p>
+            We are committed to <span class="highlight">transparency</span>,
+            <span class="highlight">privacy</span>, and
+            <span class="highlight">accessibility</span>. Our Progressive Web
+            App (PWA) processes plagiarism checks
+            <span class="highlight">entirely on your device</span> — your data
+            never leaves your computer. By operating fully on the front end and
+            open-sourcing our algorithm, we guarantee that your documents remain
+            private, secure, and under your control.
+          </p>
+          <p>
+            By offering this service free of charge and without requiring any
+            login, we ensure that integrity checking is no longer a privilege of
+            the few but a right for all.
+          </p>
         </div>
       </section>
 
-      <section class="features">
-        <h2 class="hero-title">Why Choose PlagCheck?</h2>
+      <section id="story">
+        <div class="container">
+          <h2>Our Story</h2>
+          <p>
+            This project is the passion-driven work of a solo developer and
+            researcher who understands firsthand the struggles of working within
+            institutions that lack access to expensive integrity-checking tools.
+          </p>
+          <p>
+            Frustrated by the gap between well-funded institutions and
+            under-resourced ones, our developer set out to build a solution that
+            levels the playing field — a plagiarism checker that is free,
+            private, and effective. While we acknowledge that our solution may
+            not replace comprehensive institutional systems, it provides an
+            essential <span class="highlight">preliminary checker</span> for
+            those who need it most.
+          </p>
+          <p>
+            Small steps like these move us closer to a future where academic
+            integrity is accessible to everyone, regardless of their
+            institutional background.
+          </p>
 
-        <div class="feature">
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">🔒</div>
-              100% Private
-            </h3>
+          <div class="open-source-box">
+            <h3>Our Open Source Commitment</h3>
             <p>
-              No data ever leaves your device. Your documents are processed
-              locally, with no server interaction or storage.
+              PlagiarismGuard is proudly open source. We believe in transparency
+              and community-driven development. By making our code public, we
+              invite scrutiny, contributions, and improvements from the global
+              academic and developer community.
             </p>
-          </div>
-
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">💻</div>
-              Works Offline
-            </h3>
-            <p>
-              No internet connection required. Use PlagCheck anywhere, anytime
-              without worrying about connectivity.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">🚀</div>
-              Fast & Efficient
-            </h3>
-            <p>
-              Our optimized algorithms provide quick results while using minimal
-              system resources.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">📲</div>
-              Installable App
-            </h3>
-            <p>
-              Install PlagCheck on your device with just a click. Access it from
-              your home screen or app drawer like any native application, with
-              no app store required.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">📚</div>
-              Student-Focused
-            </h3>
-            <p>
-              Designed specifically for students who don't have access to
-              institutional plagiarism checking tools.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">📊</div>
-              Detailed Reports
-            </h3>
-            <p>
-              Receive comprehensive similarity reports with highlighted sections
-              and improvement suggestions.
+            <p style="margin-bottom: 0">
+              Visit our GitHub repository to explore the code, report issues, or
+              contribute to the project.
             </p>
           </div>
         </div>
       </section>
 
-      <section class="features">
-        <h2 class="hero-title">Detailed Instructions</h2>
-        <div class="feature">
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">📋</div>
-              File Requirements
-            </h3>
-            <p>
-              - DOCX: Upload a single .docx file to check for plagiarism<br />
-              - PDF: Upload up to 200 PDF files as reference materials<br />
-              - No file size limitations<br />
-              - Recommended: 10-200 files for optimal performance
-            </p>
-          </div>
+      <section id="audience">
+        <div class="container">
+          <h2>Who We Serve</h2>
+          <p>We welcome everyone, but our platform especially supports:</p>
+          <ul class="audience-list">
+            <li>
+              <strong>Independent researchers</strong> who need to ensure their
+              work is original before submission
+            </li>
+            <li>
+              <strong>Academicians from under-resourced institutions</strong>
+              without access to expensive plagiarism detection tools
+            </li>
+            <li>
+              <strong>Students preparing papers or theses</strong> who want to
+              check their work before submission
+            </li>
+            <li>
+              <strong>Educators seeking</strong> a trustworthy, secure way to
+              verify academic work
+            </li>
+          </ul>
+          <p>
+            In the academic world, publication is critical — and while
+            paraphrasing and referencing are natural parts of writing, checking
+            for originality should be easily accessible to all. Our tool detects
+            even subtle similarities, helping scholars maintain high ethical
+            standards.
+          </p>
 
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">📊</div>
-              Understanding Results
-            </h3>
-            <p>
-              - Low Plagiarism: &lt;10% (Green)<br />
-              - Moderate Plagiarism: 10-25% (Orange)<br />
-              - High Plagiarism: &gt;25% (Red)<br />
-              - Each PDF is assigned a unique color for highlighting matches<br />
-              - Colors may repeat if more than 24 PDFs are used
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">⚙️</div>
-              Processing Details
-            </h3>
-            <p>
-              - Processing happens entirely on your device<br />
-              - No internet connection required<br />
-              - Text formatting doesn't affect results<br />
-              - Common words and small phrases are automatically filtered<br />
-              - Processing time varies with file size and quantity
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <h3>
-              <div class="feature-icon">💡</div>
-              Best Practices
-            </h3>
-            <p>
-              - Start with a small set of PDFs to understand results<br />
-              - Review highlighted sections in context<br />
-              - Check source PDFs when matches are found<br />
-              - Consider running multiple checks with different reference
-              sets<br />
-              - Use latest browser version for best performance
-            </p>
+          <div class="cta-wrapper">
+            <button>
+              <a href="/index.html" class="cta-button">Get Started Now</a>
+            </button>
           </div>
         </div>
       </section>
 
-      <section class="features">
-        <h2 class="hero-title">Frequently Asked Questions</h2>
-
-        <div class="faq-item">
-          <div class="faq-question">
-            How accurate is PlagCheck compared to university tools?
-            <span class="toggle">+</span>
-          </div>
-          <div class="faq-answer">
-            <p>
-              While PlagCheck provides a solid foundation for plagiarism
-              detection, it's important to note that it doesn't have access to
-              the extensive proprietary databases that university-provided tools
-              often use. PlagCheck works by comparing your document against the
-              reference materials you provide, making it extremely effective for
-              checking against course materials but less comprehensive for
-              detecting similarities with published works not included in your
-              references.
-            </p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">
-            Is my data really safe and private even with advertisements?
-            <span class="toggle">+</span>
-          </div>
-          <div class="faq-answer">
-            <p>
-              Absolutely. PlagCheck operates entirely within your browser. There
-              is no backend server processing your documents, no data storage,
-              and no transmission of your content over the internet. Your
-              documents never leave your device, ensuring complete privacy and
-              security. The advertisements are loaded separately and have no
-              access to your uploaded files or their content.
-            </p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">
-            What file formats does PlagCheck support?
-            <span class="toggle">+</span>
-          </div>
-          <div class="faq-answer">
-            <p>
-              PlagCheck supports most common document formats including .docx,
-              .pdf, .txt, .rtf, .odt, and more. The application extracts text
-              content from these files for analysis.
-            </p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">
-            Is there an ad-free version available?
-            <span class="toggle">+</span>
-          </div>
-          <div class="faq-answer">
-            <p>
-              Currently, we only offer the ad-supported version of PlagCheck.
-              We've made this decision to keep the service completely free for
-              all users while maintaining its privacy-first approach. We
-              carefully select our ad partners and ensure the advertisements are
-              non-intrusive and clearly separated from the plagiarism checking
-              functionality.
-            </p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">
-            Can I use PlagCheck for my professional work?
-            <span class="toggle">+</span>
-          </div>
-          <div class="faq-answer">
-            <p>
-              While primarily designed for students, PlagCheck can be used by
-              anyone looking to verify the originality of their written content.
-              However, for professional publications or critical documents, we
-              recommend using it as a preliminary check before employing more
-              comprehensive commercial solutions.
-            </p>
-          </div>
+      <section id="vision">
+        <div class="container">
+          <h2>Future Vision</h2>
+          <p>
+            We are dedicated to enhancing our services continuously, responding
+            to real-world needs with ongoing improvements, innovations, and new
+            features — always aligned with our core values of transparency,
+            security, and academic empowerment.
+          </p>
+          <p>
+            Our vision is to continue making plagiarism detection more
+            transparent, more accessible, and more community-driven — ensuring
+            that integrity checking is no longer a privilege of the few but a
+            right for all.
+          </p>
         </div>
       </section>
     </main>
 
     <footer>
-      <p>&copy; 2025 Plagiarism Checker. All rights reserved.</p>
-      <p>Your work stays yours. No data collection. No tracking.</p>
+      <div>
+        <p>&copy; 2025 PlagiarismGuard - Open Source Plagiarism Checker</p>
+        <p>Empowering academic integrity through privacy and accessibility.</p>
+        <div class="footer-links">
+          <a href="#">GitHub</a>
+          <a href="#">Guide</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
     </footer>
-    <script>
-      const faqQuestions = document.querySelectorAll(".faq-question");
-      faqQuestions.forEach((question) => {
-        question.addEventListener("click", () => {
-          const answer = question.nextElementSibling;
-          const toggle = question.querySelector(".toggle");
-          answer.classList.toggle("open");
-          toggle.textContent = answer.classList.contains("open") ? "-" : "+";
-        });
-      });
-    </script>
+
+    <script src="js/script.js"></script>
   </body>
 </html>
