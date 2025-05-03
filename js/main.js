@@ -476,30 +476,46 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
 
     const allResults = results.flat();
 
-    const trigramFrequency = findMostDistinctiveTrigrams(allResults, 10);
+    if (totalFiles > 19) {
+      const trigramFrequency = findUniqueTrigrams(allResults);
 
-    const IdsoftopTrigrams = getWordIdsForDistinctiveTrigrams(
-      trigramFrequency,
-      docx_trigrams
-    );
+      const IdsoftopTrigrams = getWordIdsForDistinctiveTrigrams(
+        trigramFrequency,
+        docx_trigrams
+      );
 
-    const finalresults = updateDocumentIdsWithDistinctiveTrigrams(
-      allResults,
-      IdsoftopTrigrams
-    );
+      const finalresults = updateDocumentIdsWithDistinctiveTrigrams(
+        allResults,
+        IdsoftopTrigrams
+      );
 
-    docxArray.words = addSpanTagsAndModify(docxArray.words, finalresults);
+      docxArray.words = addSpanTagsAndModify(docxArray.words, finalresults);
 
-    let highlightedTextHTML = combineWordsAndTagsInOrder(docxArray);
-    const summaryReportHTML = generateSummaryReportHTML(
-      finalresults,
-      pdfFiles,
-      docxFile,
-      docxlength
-    );
+      let highlightedTextHTML = combineWordsAndTagsInOrder(docxArray);
+      const summaryReportHTML = generateSummaryReportHTML(
+        finalresults,
+        pdfFiles,
+        docxFile,
+        docxlength
+      );
 
-    resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
-    console.timeEnd("Bear");
+      resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
+
+      console.timeEnd("Bear");
+    } else {
+      docxArray.words = addSpanTagsAndModify(docxArray.words, allResults);
+
+      let highlightedTextHTML = combineWordsAndTagsInOrder(docxArray);
+      const summaryReportHTML = generateSummaryReportHTML(
+        allResults,
+        pdfFiles,
+        docxFile,
+        docxlength
+      );
+
+      resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
+      console.timeEnd("Bear");
+    }
   } catch (error) {
     throw new Error(`Text extraction failed: ${error.message}`);
   }
@@ -682,7 +698,7 @@ function separateWordsAndTags(inputArray) {
 }
 
 /**
- * Finds the most distinctive trigrams based on IDF scores, including all trigrams that tie for top scores
+ * Finds the most unique trigrams based on IDF scores, including all trigrams that tie for top scores
  *
  * @param {Array<{Ids: string[], alikeTrigramTexts: string[], file: string, color: string}>} dataArray
  * An array of objects, where each object contains:
@@ -690,12 +706,10 @@ function separateWordsAndTags(inputArray) {
  * - alikeTrigramTexts: An array of ALL trigram texts in the document.
  * - file: The file name.
  * - color: A color.
- * @param {number} [percentToReturn=10] Percentage of top trigrams to return (default 10%)
  * @returns {Array<{trigram: string, idfScore: number, documentCount: number}>}
- * An array of the most distinctive trigrams sorted by IDF score (highest first),
- * including all trigrams that tie at the cutoff threshold
+ * An array of the unique trigrams
  */
-function findMostDistinctiveTrigrams(dataArray, percentToReturn = 10) {
+function findUniqueTrigrams(dataArray) {
   // 1. Input Validation
   if (!Array.isArray(dataArray)) {
     console.error("Invalid input. dataArray must be an array.");
@@ -704,63 +718,51 @@ function findMostDistinctiveTrigrams(dataArray, percentToReturn = 10) {
 
   // 2. Calculate Document Frequency (DF)
   const trigramDocumentFrequency = new Map(); // Map to store DF: trigram -> count
-  const totalDocuments = dataArray.length;
 
-  // Set of all unique trigrams to track the universe of trigrams
-  const allUniqueTrigrams = new Set();
+  // Map to track which documents contain each trigram
+  const trigramToDocumentMap = new Map();
 
-  for (const item of dataArray) {
+  // Process each document
+  for (let docIndex = 0; docIndex < dataArray.length; docIndex++) {
+    const item = dataArray[docIndex];
     if (Array.isArray(item.alikeTrigramTexts)) {
       const uniqueTrigrams = new Set(item.alikeTrigramTexts); // Count each trigram *once* per document
 
-      // Add to the full universe of trigrams
+      // Update document frequency counts and document mapping
       for (const trigram of uniqueTrigrams) {
-        allUniqueTrigrams.add(trigram);
-      }
-
-      // Update document frequency counts
-      for (const trigram of uniqueTrigrams) {
+        // Update document frequency
         trigramDocumentFrequency.set(
           trigram,
           (trigramDocumentFrequency.get(trigram) || 0) + 1
         );
+
+        // Track which document contains this trigram
+        if (!trigramToDocumentMap.has(trigram)) {
+          trigramToDocumentMap.set(trigram, []);
+        }
+        trigramToDocumentMap.get(trigram).push(docIndex);
       }
     }
   }
 
-  // 3. Calculate IDF for each trigram and create an array of trigram objects
-  const trigramArray = Array.from(allUniqueTrigrams).map((trigram) => {
-    const documentFrequency = trigramDocumentFrequency.get(trigram) || 0;
-    const idfScore = Math.log(totalDocuments / (documentFrequency + 1)); // Add 1 to avoid division by zero
-
-    return {
-      trigram,
-      idfScore,
-      documentCount: documentFrequency,
-    };
-  });
-
-  // 4. Sort by IDF score (highest first)
-  const sortedTrigrams = trigramArray.sort((a, b) => b.idfScore - a.idfScore);
-
-  // 5. Determine how many trigrams to return based on percentage
-  const numberOfTrigramsToReturn = Math.ceil(
-    sortedTrigrams.length * (percentToReturn / 100)
-  );
-
-  if (numberOfTrigramsToReturn >= sortedTrigrams.length) {
-    return sortedTrigrams; // Return all if the percentage is too high
+  // 3. Find trigrams that appear in exactly one document
+  const uniqueTrigrams = [];
+  for (const [trigram, count] of trigramDocumentFrequency.entries()) {
+    if (count === 1) {
+      const documentIndex = trigramToDocumentMap.get(trigram)[0];
+      uniqueTrigrams.push({
+        trigram,
+        documentIndex,
+        documentCount: 1,
+      });
+    }
   }
 
-  // 6. Get the IDF score at the cutoff point
-  const cutoffScore = sortedTrigrams[numberOfTrigramsToReturn - 1].idfScore;
+  // 4. Sort alphabetically by trigram for easier reading (optional)
+  uniqueTrigrams.sort((a, b) => a.trigram.localeCompare(b.trigram));
 
-  // 7. Include all trigrams that have an IDF score greater than or equal to the cutoff
-  const result = sortedTrigrams.filter((item) => item.idfScore >= cutoffScore);
-
-  return result;
+  return uniqueTrigrams;
 }
-
 /**
  * Finds the wordIds corresponding to the distinctive trigrams we identified
  *
@@ -901,7 +903,7 @@ function addSpanTagsAndModify(array, allResults) {
 
     if (matchingResult) {
       // Wrap the content in a span tag with the color from the matching result
-      const modifiedContent = `<span title="${matchingResult.file}"style="background-color: ${matchingResult.color.hex}">${item.content}</span>`;
+      const modifiedContent = `<span title="${matchingResult.file}" style="background-color: ${matchingResult.color.hex}">${item.content}</span>`;
       return {
         ...item,
         content: modifiedContent,
