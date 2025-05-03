@@ -476,7 +476,7 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
 
     const allResults = results.flat();
 
-    if (totalFiles > 19) {
+    if (totalFiles > 15) {
       const trigramFrequency = findUniqueTrigrams(allResults);
 
       const IdsoftopTrigrams = getWordIdsForDistinctiveTrigrams(
