@@ -1,0 +1,21 @@
+{
+  "name": "PlagiarismKnight",
+  "short_name": "PlagKnight",
+  "description": "Privacy-focused plagiarism detection tool",
+  "start_url": "/pages/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/images/plagknight_128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/plagknight_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

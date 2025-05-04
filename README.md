@@ -1,6 +1,6 @@
 # Private Plagiarism Checker
 
-## Video Demo:
+## Video Demo: Coming Soon
 
 ## 🔎 Motivation
 

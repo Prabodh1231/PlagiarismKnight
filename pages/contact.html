@@ -28,6 +28,12 @@
     <link rel="icon" href="/images/plagknight_512.png" type="image/png" />
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/contact.css" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="PlagiarismKnight" />
+    <link rel="apple-touch-icon" href="/images/plagknight_512.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -121,8 +127,8 @@
           </p>
 
           <div class="email-container">
-            <a href="mailto:contact@yourbrand.com" class="email-link"
-              >contact@yourbrand.com</a
+            <a href="mailto:plagiarismknight@gmail.com" class="email-link"
+              >plagiarismknight@gmail.com</a
             >
           </div>
 
@@ -155,5 +161,19 @@
     </footer>
 
     <script src="/js/script.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/js/serviceWorker.js")
+            .then((registration) => {
+              console.log("ServiceWorker registered:", registration);
+            })
+            .catch((error) => {
+              console.log("ServiceWorker registration failed:", error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
