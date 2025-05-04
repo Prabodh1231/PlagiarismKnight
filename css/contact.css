@@ -46,6 +46,19 @@ main {
   text-decoration: underline;
 }
 
+.linkedin-link {
+  color: var(--primary-color);
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.linkedin-link:hover {
+  color: val(--primary-color-dark);
+  text-decoration: underline;
+}
+
 .social-links {
   display: flex;
   justify-content: center;
