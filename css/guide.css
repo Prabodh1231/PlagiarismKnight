@@ -80,3 +80,17 @@ section:nth-child(even) {
   position: relative;
   width: calc(100% + (50vw - 51%));
 }
+
+@media (max-width: 768px) {
+  :root {
+    --spacing: 4rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  .open-source-box {
+    padding-right: 2rem;
+  }
+}

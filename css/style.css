@@ -331,6 +331,21 @@ footer {
   .menu-toggle {
     display: flex;
   }
+
+  button.menu-toggle {
+    color: var(--text-dark);
+    font: 13.3333px "arial";
+    padding: 1px 6px;
+    margin: 00px 0;
+    box-shadow: none;
+  }
+
+  button.menu-toggle:hover {
+    background-color: var(--bg-light);
+    border-radius: 5px;
+    box-shadow: none;
+    transform: none;
+  }
 }
 
 @media (max-width: 768px) {
