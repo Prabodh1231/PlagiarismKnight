@@ -2,7 +2,7 @@
   "name": "PlagiarismKnight",
   "short_name": "PlagKnight",
   "description": "Privacy-focused plagiarism detection tool",
-  "start_url": "/pages/index.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",

@@ -1,7 +1,7 @@
 const CACHE_NAME = "plagknight-v1";
 const ASSETS_TO_CACHE = [
   "/",
-  "/pages/index.html",
+  "/index.html",
   "/pages/about.html",
   "/pages/guide.html",
   "/pages/contact.html",
