@@ -328,6 +328,10 @@ footer {
     display: none;
   }
 
+  .header-container {
+    padding: 0 1rem;
+  }
+
   .menu-toggle {
     display: flex;
   }

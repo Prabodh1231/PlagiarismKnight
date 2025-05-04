@@ -412,7 +412,8 @@ img {
   }
 
   .hero {
-    margin: 10px;
+    padding: 1rem;
+    margin: 5px;
   }
 
   .sidebar {
