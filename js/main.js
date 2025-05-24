@@ -265,6 +265,8 @@ function generateSummaryReportHTML(results, pdfFiles, docxFile, docxlength) {
   }
 
   let summaryHTML = `
+  <h1 class="brand-name">Plagiarism<span>Knight</span></h1>
+  
       <div class="summary-report">
         <h2>Plagiarism Check Summary</h2>
         <p><strong>DOCX File:</strong> ${docxFileName}</p>
@@ -498,7 +500,7 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
         docxFile,
         docxlength
       );
-
+      addSavePdfButtonDynamically();
       resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
 
       console.timeEnd("Bear");
@@ -512,7 +514,7 @@ async function extractTextAndCompare(pdfFiles, docxFile) {
         docxFile,
         docxlength
       );
-
+      addSavePdfButtonDynamically();
       resultOutput.innerHTML = summaryReportHTML + highlightedTextHTML;
       console.timeEnd("Bear");
     }
@@ -1297,3 +1299,57 @@ function generateStructuredTrigrams(wordObjects) {
     uniqueTrigramTexts: uniqueTrigramTexts,
   };
 }
+
+// Function to handle saving as PDF (your existing logic)
+function saveAsPDF() {
+  const originalTitle = document.title;
+  document.title = "My Webpage - " + new Date().toLocaleDateString();
+
+  window.print();
+
+  setTimeout(() => {
+    document.title = originalTitle;
+  }, 1000);
+}
+
+// Function to dynamically add the button using innerHTML/insertAdjacentHTML
+function addSavePdfButtonDynamically() {
+  // 1. Get the container where you want to add the button
+  const container = document.getElementById("buttonContainer"); // Make sure you have a <div id="buttonContainer"> in your HTML
+
+  if (container) {
+    // 2. Define the HTML string for the button
+    // It's good practice to give it an ID so you can easily select it later
+    const buttonHtml =
+      '<button class="save-btn" id="dynamicSavePdfButton">📄 Save as PDF</button>';
+
+    // 3. Add the HTML string to the container
+    // insertAdjacentHTML is often preferred over innerHTML if you want to
+    // append/prepend without overwriting existing content.
+    // 'beforeend' means inside the container, after its last child.
+    container.insertAdjacentHTML("beforeend", buttonHtml);
+
+    // 4. Get a reference to the newly added button
+    // IMPORTANT: You must get the reference *after* it's been added to the DOM
+    const dynamicButton = document.getElementById("dynamicSavePdfButton");
+
+    // 5. Attach the event listener to the newly referenced button
+    if (dynamicButton) {
+      dynamicButton.addEventListener("click", saveAsPDF);
+    } else {
+      console.error(
+        'Error: Dynamically added button with ID "dynamicSavePdfButton" not found.'
+      );
+    }
+  } else {
+    console.error('Error: "buttonContainer" element not found in HTML.');
+  }
+}
+
+// Optional: Add keyboard shortcut (Ctrl+P or Cmd+P)
+document.addEventListener("keydown", function (e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === "p") {
+    e.preventDefault();
+    saveAsPDF();
+  }
+});

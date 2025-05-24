@@ -472,3 +472,15 @@ img {
     height: 10px;
   }
 }
+
+@media print {
+  .header,
+  .mobile-menu,
+  .hero,
+  .container,
+  .processing-dialog,
+  .save-btn,
+  footer {
+    display: none;
+  }
+}
