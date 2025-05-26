@@ -474,6 +474,15 @@ img {
 }
 
 @media print {
+  *,
+  .output_container {
+    margin: 0%;
+    padding: 0%;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .header,
   .mobile-menu,
   .hero,
@@ -482,5 +491,10 @@ img {
   .save-btn,
   footer {
     display: none;
+  }
+
+  @page {
+    size: A4 portrait; /* or landscape */
+    margin: none;
   }
 }
